@@ -5,6 +5,7 @@ from Application import Application
 from IIoTDevice import IIoTDevice
 from MECServer import MECServer
 from task import Task
+from service import Service
 from scheduler import scheduler
 
 class SimulationEXE():
@@ -59,25 +60,62 @@ class SimulationEXE():
 		count1 = 0
 		count2 = 0
 		count3 = 0
+		D2Dlink_1 = []
+		D2Dlink_1_IRD = []
+		D2Dlink_1_ISD = []
+		D2Dlink_2 = []
+		D2Dlink_2_IRD = []
+		D2Dlink_2_ISD = []
+		MECoffloading = []
 		while systemTime != 800:
+			# ---------------------------------------------------------------------------
+			#  Initiates simulation
+			# ---------------------------------------------------------------------------
 			if systemTime == 0:
 				rateOfGeneratedTasks = applicaton1.getRateGenerate()
 				IIoT = IIoTDevice()
-				IIoT_temp = IIoT.IIoTdevice(NumberOfIoT, rateOfGeneratedTasks)
+				IIoT_temp = IIoT.IIoTdevice(NumberOfIoT, rateOfGeneratedTasks,D2Dlink_1_IRD,D2Dlink_2_IRD)
 				MEC = MECServer()
 				MEC_temp = MEC.MECserver(1)
-				task_temp = Task()
-				print(IIoT.getPosition())
-				print(IIoT.getPosition().count(1))
-				print(IIoT.getPosition().count(2))
-				print(IIoT.getPosition().count(3))
-				print(IIoT.getRoleIIoT())
-				print(IIoT.getRoleIIoT().count('IRD'))
-				print(IIoT.getRoleIIoT().count('ISD'))
+				print(len(IIoT.getRoleIIoT()))
+				for i in range(2,148):
+					if IIoT.getPosition()[i] == 1:
+						D2Dlink_1.append(i)
+						if IIoT.getRoleIIoT()[i] == 'IRD':
+							print("sdfasdfasdf")
+							D2Dlink_1_IRD.append(i)
+						else:
+							D2Dlink_1_ISD.append(i)
+					elif IIoT.getPosition()[i] == 2:
+						D2Dlink_2.append(i)
+						if IIoT.getRoleIIoT()[i] == 'IRD':
+							D2Dlink_2_IRD.append(i)
+						else:
+							D2Dlink_2_ISD.append(i)
+					else:
+						MECoffloading.append(i)
 			elif systemTime == subSystemTime:
 				rateOfGeneratedTasks = applicaton1.getRateGenerate()
 				IIoT = IIoTDevice()
-				IIoT_temp = IIoT.IIoTdevice(NumberOfIoT, rateOfGeneratedTasks)
+				IIoT_temp = IIoT.IIoTdevice(NumberOfIoT, rateOfGeneratedTasks,D2Dlink_1_IRD,D2Dlink_2_IRD)
+			else:
+				print("나머지 작업 처리")
+				#나머지
+			# ---------------------------------------------------------------------------
+			# 3. Tasks are created
+			# ---------------------------------------------------------------------------
+			task_D2D1 = Task()
+			task_D2D2 = Task()
+			print(D2Dlink_1_ISD)
+			task_D2D1.Task(D2Dlink_1_IRD,applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
+			task_D2D2.Task(D2Dlink_2_IRD,applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
+
+			service_D2D1 = Service()
+			service_D2D2 = Service()
+			service_D2D1.Service(D2Dlink_1_ISD,applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
+			service_D2D2.Service(D2Dlink_2_ISD,applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
+			print(D2Dlink_1_IRD)
+			print(service_D2D1.getAsk())
 
 			systemTime += 1
 
@@ -130,96 +168,96 @@ class SimulationEXE():
 		# 				numberTasksCanceledAndConcluded = 0
 		# 				numberCreatedTasks = 0
 
-						while systemTime == 1000:
-							for i in range(numberIoT):
-								print(IIoT.getBaseTime()[i],applicaton1.getRateGenerate(),"비교")
-								if ((systemTime - IIoT.getBaseTime()[i]) % int(applicaton1.getRateGenerate())) == 0:
-									task_temp = Task()
-									newTask = task_temp.Task("TarefaDummy","DeviceDummy",-1,0,0,0,0)
-									print(numberTasks,"ㅇ태스크수여")
-									if numberCreatedTasks < numberTasks:
-										print(numberCreatedTasks,"음ㄴ이루ㅏㅣㅁㄴㅇㄻㄴㅇ")
-										if applicaton1.defineInTaskIsCritical(numberCreatedTasks) == True:
-											newTask = task_temp.Task("task"+str(numberCreatedTasks), IIoT.getId()[i], applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
-										else:
-											newTask = task_temp.Task("task"+str(numberCreatedTasks), IIoT.getId()[i], -1, systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
-										numberCreatedTasks += 1
-									else:
-										break
-									scheduler_temp = scheduler()
-									Scheduler = scheduler_temp.sheduler(task_temp, coefficientEnergy, coefficientTime, alpha,beta,gamma,IIoT,MEC)
-
-									flagIoTDevice = False
-									if IIoT.verifyCPUFree(i) == True:
-										flagIoTDevice = True
-
-									flagMec = False
-									print(MEC.getStatusCOU(),"뿐ㅇ")
-									if numberMEC == 1:
-										if MEC.verifyCPUFree() == True:
-											flagMec = True
-											break
-									else:
-										for k in range(numberMEC):
-											if MEC.verifyCPUFree2(k) == True:
-												flagMec = True
-												break
-
-									octet = scheduler_temp.defineAllocationPolicy(flagIoTDevice,flagMec)
-
-									if octet[7] == self.POLICY_IIOT:
-										IIoT.alterCPUStatus(self.CORE_OCCUPIED)[i]
-										IIoT.consumeBattery(octet[1] + octet[2])[i]
-										# self.listOfIIoTDevice[i].alterCPUStatus(self.CORE_OCCUPIED)
-										# self.listOfIIoTDevice[i].consumeBattery(octet[1] + octet[2])
-									elif octet[7] == self.POLICY_MEC:
-										for k in range(numberMEC):
-											if MEC.verifyCPUFree()[k] == True:
-												MEC.occupyCPU()[k]
-												break
-
-									newTask.setExeEnery(octet[1])
-									newTask.setTransferEnergy(octet[2])
-									newTask.setEXETime(octet[3])
-									newTask.setTransferTime(octet[4])
-									newTask.setPolicy(octet[7])
-
-									if False:
-										print("기기 리스트아이디, 배터리레벨, cpufree?")
-									listRunningTask.extend(newTask)
-
-									if False:
-										print("dlrjsms ")
-
-							if listRunningTask:
-								listRunningTaskAux = []
-								listRunningTaskAux.extend(listRunningTask)
-								for k in range(listRunningTaskAux):
-
-									task = Task.Task(k)
-									if task.verifyTaksFinish(systemTime) == True:
-										listFinishedTask[numberTasksCanceledAndConcluded] = task
-										numberTasksCanceledAndConcluded += 1
-										listRunningTask.remove(k)
-
-										if task.getPolicy() == self.POLICY_IIOT:
-											id = task.getIdDeviceGenerator()
-											listOfIIoTDevice[id].alterCPUstatus(self.CORE_FREE)
-										if task.getPolicy() == self.POLICY_MEC:
-											for k in range(numberMEC):
-												if listOfMECServer[k].freeCPU() == True:
-													break
-										if True:
-											if numberTasksCanceledAndConcluded % 100 == 0:
-												print("number of task concluded")
-							if numberTasksCanceledAndConcluded ==  numberTasks:
-								if False:
-									for k in range(numberTasks):
-										print(listFinishedTasks[k].getIdTask(),"끝난 작업 목록")
-
-							systemTime += 1
-							print(systemTime,"systemtime")
-							print(numberCreatedTasks,"numberCreatedTasks")
+						# while systemTime == 1000:
+						# 	for i in range(numberIoT):
+						# 		print(IIoT.getBaseTime()[i],applicaton1.getRateGenerate(),"비교")
+						# 		if ((systemTime - IIoT.getBaseTime()[i]) % int(applicaton1.getRateGenerate())) == 0:
+						# 			task_temp = Task()
+						# 			newTask = task_temp.Task("TarefaDummy","DeviceDummy",-1,0,0,0,0)
+						# 			print(numberTasks,"ㅇ태스크수여")
+						# 			if numberCreatedTasks < numberTasks:
+						# 				print(numberCreatedTasks,"음ㄴ이루ㅏㅣㅁㄴㅇㄻㄴㅇ")
+						# 				if applicaton1.defineInTaskIsCritical(numberCreatedTasks) == True:
+						# 					newTask = task_temp.Task("task"+str(numberCreatedTasks), IIoT.getId()[i], applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
+						# 				else:
+						# 					newTask = task_temp.Task("task"+str(numberCreatedTasks), IIoT.getId()[i], -1, systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
+						# 				numberCreatedTasks += 1
+						# 			else:
+						# 				break
+						# 			scheduler_temp = scheduler()
+						# 			Scheduler = scheduler_temp.sheduler(task_temp, coefficientEnergy, coefficientTime, alpha,beta,gamma,IIoT,MEC)
+						#
+						# 			flagIoTDevice = False
+						# 			if IIoT.verifyCPUFree(i) == True:
+						# 				flagIoTDevice = True
+						#
+						# 			flagMec = False
+						# 			print(MEC.getStatusCOU(),"뿐ㅇ")
+						# 			if numberMEC == 1:
+						# 				if MEC.verifyCPUFree() == True:
+						# 					flagMec = True
+						# 					break
+						# 			else:
+						# 				for k in range(numberMEC):
+						# 					if MEC.verifyCPUFree2(k) == True:
+						# 						flagMec = True
+						# 						break
+						#
+						# 			octet = scheduler_temp.defineAllocationPolicy(flagIoTDevice,flagMec)
+						#
+						# 			if octet[7] == self.POLICY_IIOT:
+						# 				IIoT.alterCPUStatus(self.CORE_OCCUPIED)[i]
+						# 				IIoT.consumeBattery(octet[1] + octet[2])[i]
+						# 				# self.listOfIIoTDevice[i].alterCPUStatus(self.CORE_OCCUPIED)
+						# 				# self.listOfIIoTDevice[i].consumeBattery(octet[1] + octet[2])
+						# 			elif octet[7] == self.POLICY_MEC:
+						# 				for k in range(numberMEC):
+						# 					if MEC.verifyCPUFree()[k] == True:
+						# 						MEC.occupyCPU()[k]
+						# 						break
+						#
+						# 			newTask.setExeEnery(octet[1])
+						# 			newTask.setTransferEnergy(octet[2])
+						# 			newTask.setEXETime(octet[3])
+						# 			newTask.setTransferTime(octet[4])
+						# 			newTask.setPolicy(octet[7])
+						#
+						# 			if False:
+						# 				print("기기 리스트아이디, 배터리레벨, cpufree?")
+						# 			listRunningTask.extend(newTask)
+						#
+						# 			if False:
+						# 				print("dlrjsms ")
+						#
+						# 	if listRunningTask:
+						# 		listRunningTaskAux = []
+						# 		listRunningTaskAux.extend(listRunningTask)
+						# 		for k in range(listRunningTaskAux):
+						#
+						# 			task = Task.Task(k)
+						# 			if task.verifyTaksFinish(systemTime) == True:
+						# 				listFinishedTask[numberTasksCanceledAndConcluded] = task
+						# 				numberTasksCanceledAndConcluded += 1
+						# 				listRunningTask.remove(k)
+						#
+						# 				if task.getPolicy() == self.POLICY_IIOT:
+						# 					id = task.getIdDeviceGenerator()
+						# 					listOfIIoTDevice[id].alterCPUstatus(self.CORE_FREE)
+						# 				if task.getPolicy() == self.POLICY_MEC:
+						# 					for k in range(numberMEC):
+						# 						if listOfMECServer[k].freeCPU() == True:
+						# 							break
+						# 				if True:
+						# 					if numberTasksCanceledAndConcluded % 100 == 0:
+						# 						print("number of task concluded")
+						# 	if numberTasksCanceledAndConcluded ==  numberTasks:
+						# 		if False:
+						# 			for k in range(numberTasks):
+						# 				print(listFinishedTasks[k].getIdTask(),"끝난 작업 목록")
+						#
+						# 	systemTime += 1
+						# 	print(systemTime,"systemtime")
+						# 	print(numberCreatedTasks,"numberCreatedTasks")
 
 
 sim = SimulationEXE()

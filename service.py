@@ -1,8 +1,9 @@
 import random
+import numpy.random as nr
 import sys
 
 
-class Task():
+class Service():
 
     def __init__(self):
         # self.taskId
@@ -23,30 +24,30 @@ class Task():
         # self.poicy
 
 
-    def Task(self, deviceId, deadlineLatency, generateTime, computationWorkload, dataSize, returnDataSize):
-        self.taskId = []
+    def Service(self, deviceId, deadlineLatency, generateTime, computationWorkload, dataSize, returnDataSize):
         self.deviceId = deviceId
+        self.ask = []
         self.generateTime = []
         self.deadlineLatency = []
         self.computationWorkload = []
         self.dataSize = []
         self.returnDataSize = []
-        self.bid = []
         self.taskStatus = []
+        self.freq_level = []
         self.energyExe = []
         self.energyTransfer = []
         self.timeEXE = []
         self.timeTransfer = []
         self.taskStatus = []
         for i in range(len(deviceId)):
-            self.taskId.append(i)
+
+            self.ask.append(round(random.uniform(3, 10), 3))
+
             self.generateTime.append(generateTime)  # Task generate time
             self.deadlineLatency.append(deadlineLatency)  # micro seconds
             self.computationWorkload.append(computationWorkload)  # cpu cycles
             self.dataSize.append(dataSize)
             self.returnDataSize.append(returnDataSize)
-
-            self.bid.append(round(random.uniform(0, 14), 3))
 
             self.energyExe.append(0)
             self.energyTransfer.append(0)
@@ -54,8 +55,20 @@ class Task():
             self.timeTransfer.append(0)
             self.taskStatus.append(self.TASK_ALIVE)
 
-    def getBid(self):
-        return self.bid
+        self.freq = nr.normal(1,0,len(deviceId))
+        for i in range(len(deviceId)):
+            if self.freq[i] < 0:
+                self.freq_level.append('low')
+            elif self.freq[i] >= 0 and self.freq[i] < 1:
+                self.freq_level.append('mid')
+            else:
+                self.freq_level.append('high')
+
+    def freqLevel(self):
+        return self.freq_level
+
+    def getAsk(self):
+        return self.ask
 
     def getIDtask(self):
         return self.taskId

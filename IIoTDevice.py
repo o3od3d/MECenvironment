@@ -19,7 +19,7 @@ class IIoTDevice():
         self.CPU_OCCUPIED = 2
         self.maxDistance = 50
 
-    def IIoTdevice(self,numberIoT,taskGenerationRate):
+    def IIoTdevice(self,numberIoT,taskGenerationRate,D2Dlink_1_IRD,D2Dlink_2_IRD):
         self.numberIoT = numberIoT
         self.IIoTID = []
         self.taskGenerationRate = []
@@ -36,7 +36,8 @@ class IIoTDevice():
         self.roleOfIIoT = []
         self.role_temp = nr.normal(0, 1, size = numberIoT)
         for i in range(numberIoT):
-
+            if i == D2Dlink_1_IRD or i == D2Dlink_2_IRD:
+                continue
             self.taskGenerationRate.append(taskGenerationRate)
             self.baseTime.append(random.randint(0,taskGenerationRate) + 1)
             self.capacitance.append(2.2 * math.pow(10, -9))
