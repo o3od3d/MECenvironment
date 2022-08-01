@@ -4,9 +4,10 @@ import math
 class FiberOptics():
 
     def __init__(self):
-        self.latency
-        self.power
-        self.transferRate
+        print("hello fiberoptics")
+        # self.latency
+        # self.power
+        # self.transferRate
 
     def FiberOptics(self):
         self.latency = 5 * math.pow(10, -3)

@@ -4,22 +4,22 @@ import sys
 class Task():
 
     def __init__(self):
-        self.taskId
-        self.deviceId
-        self.generateTime                   # Task generate time
-        self.deadlineLatency             # micro seconds
-        self.computationWorkload      # cpu cycles
-        self.dataSize                            # bits
-        self.returnDataSize
-        self.allocatedTask                 # whether to allocate iot,mec or cloud => 0,1,2
-        self.statusOftask                    # whether task processing has been completed => 0(deny) or 1(success) or 2(processing)
+        # self.taskId
+        # self.deviceId
+        # self.generateTime                   # Task generate time
+        # self.deadlineLatency             # micro seconds
+        # self.computationWorkload      # cpu cycles
+        # self.dataSize                            # bits
+        # self.returnDataSize
+        # self.allocatedTask                 # whether to allocate iot,mec or cloud => 0,1,2
+        # self.statusOftask                    # whether task processing has been completed => 0(deny) or 1(success) or 2(processing)
 
         self.TASK_ALIVE = 1
         self.TASK_CONCLUEDE = 2
         self.TASK_CANCELLED = 3
-        self.taskStatus
-
-        self.poicy
+        # self.taskStatus
+        #
+        # self.poicy
 
 
     def Task(self, taskId, deviceId, deadlineLatency, generateTime, computationWorkload, dataSize, returnDataSize):

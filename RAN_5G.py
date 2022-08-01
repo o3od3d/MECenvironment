@@ -4,17 +4,18 @@ import math
 class RAN_5G():
 
     def __init__(self):
-        self.latency
-        self.alpha
-        self.beta
-        self.transferRate
+        print("hello 5g ran")
+        # self.latency
+        # self.alpha
+        # self.beta
+        # self.transferRate
 
     def RAN_5G(self):
         self.latency = 5 * math.pow(10, -3)
         self.alpha = 0.52 * math.pow(10, -3)
         self.beta = 3.86412
         self.transferRate = math.pow(10, 9)
-
+        print(self.alpha)
     def calculatePower(self):
         power = self.alpha * self.transferRate / math.pow(10, 6) + self.beta
         return power

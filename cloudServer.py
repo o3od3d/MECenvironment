@@ -4,10 +4,10 @@ import math
 class CloudDataCenter():
 
 	def __init__(self):
-
-		self.cloudId
-		self.standardFrequency
-		self.turboBoostFrequency
+		print("Hello cloud")
+		# self.cloudId
+		# self.standardFrequency
+		# self.turboBoostFrequency
 
 	def cloudServer(self,cloudId):
 		self.cloudId = cloudId

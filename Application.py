@@ -2,18 +2,18 @@
 class Application():
 
     def __init__(self):
-
-        self.id
-        self.rateGeneration                    # micro seconds
-        self.dataEntrySize                     # bits
-        self.resultsSize                         # bits
-        self.computationalLoad              # CPU cycles
-        self.criticalTaskPercentages  # percentages 0 ~1
-        self.criticalTaksDeadline        # micro seconds
-        self.numberOfTask
-        # percentages 0 ~1
-        if self.criticalTaskPercentages > 1 or self.criticalTaskPercentages < 0:
-            print("app",self.id,"percente out of bounds")
+        print("app")
+        # self.id
+        # # self.rateGeneration                    # micro seconds
+        # # self.dataEntrySize                     # bits
+        # # self.resultsSize                         # bits
+        # # self.computationalLoad              # CPU cycles
+        # # self.criticalTaskPercentages  # percentages 0 ~1
+        # # self.criticalTaksDeadline        # micro seconds
+        # # self.numberOfTask
+        # # percentages 0 ~1
+        # if self.criticalTaskPercentages > 1 or self.criticalTaskPercentages < 0:
+        #     print("app",self.id,"percente out of bounds")
     def application(self, id, rateGeneration, dataEntrySize, resultsSize, computationalLoad, criticalTaskPercentages, criticalTaksDeadline):
         self.id = id
         self.rateGeneration = rateGeneration  # micro seconds

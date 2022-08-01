@@ -9,17 +9,17 @@ from FiberOptics import FiberOptics
 class scheduler():
 
     def __init__(self):
-        self.coefficientEnergy
-        self.coefficientTime
-
-        self.energy5GUp
-        self.time5GUp
-        self.energy5GDown
-        self.time5GDown
-        self.energyFiberUp
-        self.timeFiberUp
-        self.energyFiberDown
-        self.timeFiberDown
+        # self.coefficientEnergy
+        # self.coefficientTime
+        #
+        # self.energy5GUp
+        # self.time5GUp
+        # self.energy5GDown
+        # self.time5GDown
+        # self.energyFiberUp
+        # self.timeFiberUp
+        # self.energyFiberDown
+        # self.timeFiberDown
 
         self.POLICY_IOT = 1
         self.POLICY_MEC = 2
@@ -31,14 +31,17 @@ class scheduler():
         self.costListMECServer = dict()
         self.costListCloud = dict()
 
-    def sheduler(self, task, coefficientEnergy, coefficientTime, alpha, beta, gamma):
+    def sheduler(self, task, coefficientEnergy, coefficientTime, alpha, beta, gamma,IIoT,MEC):
         self.task = task
-        self.iotDevice = IIoTDevice.IIoTdevice("IRD",100)
-        self.serverMEC = MECServer.MECserver("MEC")
-        self.cloud = CloudDataCenter.cloudServer("cloud")
+        self.iotDevice = IIoT
+        self.serverMEC = MEC
+        self.cloud_temp = CloudDataCenter()
+        self.cloud = self.cloud_temp.cloudServer("cloud")
 
         self.transmission5G = RAN_5G()
+        self.transmission5G.RAN_5G()
         self.transmissionFiber = FiberOptics()
+        self.transmissionFiber.FiberOptics()
 
         self.coefficientEnergy = coefficientEnergy
         self.coefficientTime = coefficientTime
@@ -58,20 +61,21 @@ class scheduler():
         self.calculateCostCloud(gamma)
 
     def calculateCostIoTDevice(self,alpha):
+        pairsFrequencyVoltage = dict()
         pairsFrequencyVoltage = self.iotDevice.getPairsFrequencyValtage()
-
-        for key,value in list(pairsFrequencyVoltage):
+        print(pairsFrequencyVoltage)
+        for key,value in list(pairsFrequencyVoltage.items()):
             exeTime = self.iotDevice.calculateExeTime(value['long'],self.task.getCompLoad())
-            dynamicEnergy = self.iotDevice.calculateDynamicEnergy(value['long'],value['double'],self.task.getCompLoad())
+            dynamicEnergy = self.iotDevice.calculateDynamicEnergy(key,value['long'],value['double'],self.task.getCompLoad())
             cost = (self.coefficientEnergy * dynamicEnergy + self.coefficientTime * exeTime) * alpha
             self.costListIoTDevice[key] = {'cost':cost, 'dynamicEnergy':dynamicEnergy,'consumed energy':0.0,'exe time':exeTime,'elap time':0.0,'op freq':value['long'],'supply volt':value['double']}
 
     def calculateCostMECServer(self,beta):
-        pairsFrequencyVoltage = self.serverMEC.getPairsFrequencyValtage()
+        pairsFrequencyVoltage = self.serverMEC.getPairFrequencyVoltages()
 
-        for key,value in list(pairsFrequencyVoltage):
+        for key,value in list(pairsFrequencyVoltage.items()):
             exeTime = self.serverMEC.calculateExecutionTime(value['long'],self.task.getCompLoad())
-            dynamicEnergy = self.serverMEC.calculateDynamicEnergyConsumed(value['long'],value['double'],self.task.getCompLoad())
+            dynamicEnergy = self.serverMEC.calculateDynamicEnergyConsumed(key,value['long'],value['double'],self.task.getCompLoad())
             totalDynamicEnergy = dynamicEnergy + self.energy5GUp + self.energy5GDown
             totalExeTime = exeTime + self.time5GUp + self.time5GDown
             cost = (self.coefficientEnergy * totalDynamicEnergy + self.coefficientTime * totalExeTime) * beta
@@ -79,9 +83,9 @@ class scheduler():
 
     def calculateCostCloud(self,gamma):
 
-        standardFreq = self.cloud.getStandardFrequency()
-        standTime = self.cloud.calculateExecutionTimeStardardFreq(self.task.getCompLoad())
-        standEnergy = self.cloud.calculateDynamicEnergyStandardFreq(self.task.getCompLoad())
+        standardFreq = self.cloud_temp.getStandardFrequency()
+        standTime = self.cloud_temp.calculateExecutionTimeStardardFreq(self.task.getCompLoad())
+        standEnergy = self.cloud_temp.calculateDynamicEnergyStandardFreq(self.task.getCompLoad())
 
         totalStandardEnergy = standEnergy + self.energy5GUp + self.energyFiberUp + self.energyFiberDown + self.energy5GDown
         totalStandardTime = standTime + self.time5GUp + self.timeFiberUp + self.timeFiberDown +self.time5GDown
@@ -92,9 +96,9 @@ class scheduler():
                                        'elap time': (self.time5GUp + self.timeFiberUp + self.timeFiberDown +self.time5GDown), 'op freq': standardFreq,
                                        'supply volt': 0.0}
 
-        turboFreq = self.cloud.getTurboBoostFrequency()
-        turboTime = self.cloud.calculaTempoExecucaoFreqTurboBoost(self.task.getCompLoad())
-        turboEnergy = self.cloud.calculateDynamicEnergyTurboFreq(self.task.getCompLoad())
+        turboFreq = self.cloud_temp.getTurboBoostFrequency()
+        turboTime = self.cloud_temp.calculaTempoExecucaoFreqTurboBoost(self.task.getCompLoad())
+        turboEnergy = self.cloud_temp.calculateDynamicEnergyTurboFreq(self.task.getCompLoad())
 
         totalTurboEnergy = turboEnergy + self.energy5GUp + self.energyFiberUp + self.energyFiberDown + self.energy5GDown
         totalTurboTime = turboTime + self.time5GUp + self.time5GDown + self.timeFiberDown + self.timeFiberUp

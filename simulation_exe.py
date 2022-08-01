@@ -1,4 +1,6 @@
 import math
+import numpy.random as nr
+
 from Application import Application
 from IIoTDevice import IIoTDevice
 from MECServer import MECServer
@@ -45,58 +47,90 @@ class SimulationEXE():
 		# 				   'deadlineCriticaltask': deadlineCriticalTasks}
 		print(applicaton1.getID(),"우잉")
 		listNumberOfTasks = [500, 5000]
-		listNumberOfIoT = [100, 500, 1000]
-		listNumberOfMEC = [1, 2]
+		NumberOfIoT = 150
+		listNumberOfMEC = [1]
 		listOfIIoTDevice = []
 		self.listOfMECServer = []
-		count = 0
-		for numberTasks in listNumberOfTasks:
-			listRunningTask = []
-			listFinishedTask = []
-			print("numberTasks :",numberTasks)
-			for numberIoT in listNumberOfIoT:
-				print("numberIIOT",numberIoT)
-				if numberIoT > numberTasks:
-					continue
-				for numberMEC in listNumberOfMEC:
-					print("numberMEC",numberMEC)
-					for j in list(appList):
-						#self.app.setNumberOfTask(numberTasks)
-						print("sdfasdfasdfad")
-						applicaton1.setNumberOfTask(numberTasks)
-						print(applicaton1.getNumberOfTask(),"ㅅㅁ나tn")
-						coefficientEnergy = 4.0 / 5.0
-						coefficientTime = 1 - coefficientEnergy
-						print(coefficientTime,"time")
-						alpha = 1.0 / 3.0
-						beta = 1.0 / 3.0
-						gamma = 1.0 / 3.0
+		systemTime = 0
+		numberOfTaskFailure = 0
+		subSystemTime = 500
+		numberCreatedTasks = 0
+		numberSuccessTasks = 0
+		count1 = 0
+		count2 = 0
+		count3 = 0
+		while systemTime != 800:
+			if systemTime == 0:
+				rateOfGeneratedTasks = applicaton1.getRateGenerate()
+				IIoT = IIoTDevice()
+				IIoT_temp = IIoT.IIoTdevice(NumberOfIoT, rateOfGeneratedTasks)
+				MEC = MECServer()
+				MEC_temp = MEC.MECserver(1)
+				task_temp = Task()
+				print(IIoT.getPosition())
+				print(IIoT.getPosition().count(1))
+				print(IIoT.getPosition().count(2))
+				print(IIoT.getPosition().count(3))
+				print(IIoT.getRoleIIoT())
+				print(IIoT.getRoleIIoT().count('IRD'))
+				print(IIoT.getRoleIIoT().count('ISD'))
+			elif systemTime == subSystemTime:
+				rateOfGeneratedTasks = applicaton1.getRateGenerate()
+				IIoT = IIoTDevice()
+				IIoT_temp = IIoT.IIoTdevice(NumberOfIoT, rateOfGeneratedTasks)
 
-						rateOfGeneratedTasks = applicaton1.getRateGenerate()
-						print(rateOfGeneratedTasks,"rateOfGenerateTasks")
+			systemTime += 1
 
-						IIoT = IIoTDevice()
-						IIoT_temp = IIoT.IIoTdevice(numberIoT,rateOfGeneratedTasks)
 
-						MEC = MECServer()
-						MEC_temp = MEC.MECserver(numberMEC)
-						# for i in range(numberIoT):
-						# 	IIoT = IIoTDevice()
-						# 	IIoT_temp = IIoT.IIoTdevice("IIoT"+str(i),rateOfGeneratedTasks)
-						# 	listOfIIoTDevice.append(IIoT.getId())
-						# 	print(IIoT.getBaseTime(),"LISTiiOT")
-						# for i in range(numberIoT):
-						# 	if IIoT.getId() == "IIoT1":
-						# 		print(IIoT.getBaseTime(),"결과")
-						# for i in range(numberMEC):
-						# 	self.listOfMECServer.append(MECServer("mec"+i))
-						# 	print(self.listOfMECServer,"listMEC")
 
-						systemTime = 0
-						numberTasksCanceledAndConcluded = 0
-						numberCreatedTasks = 0
+		#
+		# for numberTasks in listNumberOfTasks:
+		# 	listRunningTask = []
+		# 	listFinishedTask = []
+		# 	print("numberTasks :",numberTasks)
+		# 	for numberIoT in listNumberOfIoT:
+		# 		print("numberIIOT",numberIoT)
+		# 		if numberIoT > numberTasks:
+		# 			continue
+		# 		for numberMEC in listNumberOfMEC:
+		# 			print("numberMEC",numberMEC)
+		# 			for j in list(appList):
+		# 				#self.app.setNumberOfTask(numberTasks)
+		# 				print("sdfasdfasdfad")
+		# 				applicaton1.setNumberOfTask(numberTasks)
+		# 				print(applicaton1.getNumberOfTask(),"ㅅㅁ나tn")
+		# 				coefficientEnergy = 4.0 / 5.0
+		# 				coefficientTime = 1 - coefficientEnergy
+		# 				print(coefficientTime,"time")
+		# 				alpha = 1.0 / 3.0
+		# 				beta = 1.0 / 3.0
+		# 				gamma = 1.0 / 3.0
+		#
+		# 				rateOfGeneratedTasks = applicaton1.getRateGenerate()
+		# 				print(rateOfGeneratedTasks,"rateOfGenerateTasks")
+		#
+		# 				IIoT = IIoTDevice()
+		# 				IIoT_temp = IIoT.IIoTdevice(numberIoT,rateOfGeneratedTasks)
+		#
+		# 				MEC = MECServer()
+		# 				MEC_temp = MEC.MECserver(numberMEC)
+		# 				for i in range(numberIoT):
+		# 					IIoT = IIoTDevice()
+		# 					IIoT_temp = IIoT.IIoTdevice("IIoT"+str(i),rateOfGeneratedTasks)
+		# 					listOfIIoTDevice.append(IIoT.getId())
+		# 					print(IIoT.getBaseTime(),"LISTiiOT")
+		# 				for i in range(numberIoT):
+		# 					if IIoT.getId() == "IIoT1":
+		# 						print(IIoT.getBaseTime(),"결과")
+		# 				for i in range(numberMEC):
+		# 					self.listOfMECServer.append(MECServer("mec"+i))
+		# 					print(self.listOfMECServer,"listMEC")
+		#
+		# 				systemTime = 0
+		# 				numberTasksCanceledAndConcluded = 0
+		# 				numberCreatedTasks = 0
 
-						while True:
+						while systemTime == 1000:
 							for i in range(numberIoT):
 								print(IIoT.getBaseTime()[i],applicaton1.getRateGenerate(),"비교")
 								if ((systemTime - IIoT.getBaseTime()[i]) % int(applicaton1.getRateGenerate())) == 0:
