@@ -62,13 +62,14 @@ class IIoTDevice():
                 #     self.position.append(2)
                 # else:
                 #     self.position.append(3)
-                subx = random.randint(-110,110)
+                subx = random.randint(-100,100)
                 self.positionOfx.append(subx)
-                suby = random.randint(-50,50)
+                suby = random.randint(-45,45)
                 self.positionOfy.append(suby)
                 temp_type = self.classificationType(subx,suby)
                 self.position.append(temp_type)
-                self.IIoTID.append("iiot" + str(i))
+                #self.IIoTID.append("iiot" + str(i))
+                self.IIoTID.append(i)
 
             self.statusCPU.append(self.CPU_FREE)
         temp_count_D2D1 = self.position.count(1)

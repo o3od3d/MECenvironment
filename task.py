@@ -42,8 +42,8 @@ class Task():
             self.taskId.append(i)
             self.generateTime.append(generateTime)  # Task generate time
             self.deadlineLatency.append(deadlineLatency)  # micro seconds
-            self.computationWorkload.append(computationWorkload)  # cpu cycles
-            self.dataSize.append(dataSize)
+            self.computationWorkload.append(computationWorkload[i])  # cpu cycles
+            self.dataSize.append(dataSize[i])
             self.returnDataSize.append(returnDataSize)
 
             self.bid.append(round(random.uniform(0, 14), 3))
@@ -53,6 +53,9 @@ class Task():
             self.timeEXE.append(0)
             self.timeTransfer.append(0)
             self.taskStatus.append(self.TASK_ALIVE)
+
+    def getDeviceId(self):
+        return self.deviceId
 
     def getBid(self):
         return self.bid

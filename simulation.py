@@ -3,7 +3,9 @@ from Application import Application
 from IIoTDevice import IIoTDevice
 from MECServer import MECServer
 from task import Task
+from proposed_double_auction import doubleAuction
 from scheduler import scheduler
+
 
 class SimulationEXE():
 
