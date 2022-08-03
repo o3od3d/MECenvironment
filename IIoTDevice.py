@@ -37,6 +37,7 @@ class IIoTDevice():
         self.role_temp = nr.normal(0, 1, size = numberIoT)
         for i in range(numberIoT):
             if i == D2Dlink_1_IRD or i == D2Dlink_2_IRD:
+
                 continue
             self.taskGenerationRate.append(taskGenerationRate)
             self.baseTime.append(random.randint(0,taskGenerationRate) + 1)
@@ -176,7 +177,7 @@ class IIoTDevice():
             return True
         return False
 
-    def alterCPUStatus(self, newStatus):
+    def alterCPUStatus(self, newStatus,key):
         if newStatus != self.CPU_FREE and newStatus != self.CPU_OCCUPIED:
             print("error",self.IIoTID)
-        self.statusCPU = newStatus
+        self.statusCPU[key] = newStatus

@@ -44,10 +44,16 @@ class SimulationEXE():
 		computationalLoadCPUCycles = 20 * math.pow(10, 4)
 		deadlineCriticalTasks = 0.5 * math.pow(10, 6)
 		percentageOfCriticalTasks = 0.1
+		numberTasksCanceledAndConcludedD2D = 0
+		numberTasksCanceledAndConcludedMEC = 0
+		processingTaskD2D = []
+		processingTaskMEC = []
+		remainMECoffloading = []
 
 		appList['APP1'] = {'taskGen':taskGenerationRate,'taskDataSize':taskDataEntrySize,'taskResultSize':taskResultSize,'computationalLoadCycle':computationalLoadCPUCycles,'percentageOfCriticalTask':percentageOfCriticalTasks,'deadlineCriticaltask':deadlineCriticalTasks}
 		applicaton1 = Application()
 		applicaton2 = Application()
+		applicaton3 = Application()
 		# taskGenerationRate = 0.1 * math.pow(10, 6)
 		# taskDataEntrySize = 4 * 8 * math.pow(10, 6)
 		# taskResultSize = 5 * math.pow(10, 3)
@@ -81,8 +87,9 @@ class SimulationEXE():
 		D2Dlink_2_ISD = []
 		MECoffloading = []
 		Bandwidth = 100
-
-		while systemTime != 100:
+		MECoffloadingDict = {i: {'Policy': 0} for i in MECoffloading}
+		CloudOffloading = []
+		while systemTime != 10:
 			# ---------------------------------------------------------------------------
 			#  1. Initiates simulation
 			# ---------------------------------------------------------------------------
@@ -93,8 +100,7 @@ class SimulationEXE():
 				MEC = MECServer()
 				MEC_temp = MEC.MECserver(1)
 				A = IIoT.getPosition()
-				print(A.count(1),A.count(2),A.count(3))
-				print(len(IIoT.getRoleIIoT()))
+
 				for i in range(2, (NumberOfIoT - 2)):
 					if IIoT.getPosition()[i] == 1:
 						D2Dlink_1.append(IIoT.getId()[i])
@@ -115,6 +121,7 @@ class SimulationEXE():
 				IIoT = IIoTDevice()
 				IIoT_temp = IIoT.IIoTdevice(NumberOfIoT, rateOfGeneratedTasks,D2Dlink_1_IRD,D2Dlink_2_IRD)
 			else:
+
 				print("나머지 작업 처리")
 				#나머지
 			# ---------------------------------------------------------------------------
@@ -126,26 +133,31 @@ class SimulationEXE():
 			self.app2 = applicaton2.application('app2', taskGenerationRate, taskDataEntrySize, taskResultSize,
 											   computationalLoadCPUCycles, percentageOfCriticalTasks,
 											   deadlineCriticalTasks, D2Dlink_2_IRD)
+			self.app3 = applicaton3.application('app3', taskGenerationRate, taskDataEntrySize, taskResultSize,
+												computationalLoadCPUCycles, percentageOfCriticalTasks,
+												deadlineCriticalTasks, MECoffloading)
 			self.task_D2D1 = Task()
 			self.task_D2D2 = Task()
-			print(D2Dlink_1_ISD)
+			self.task_MEC = Task()
+
 			self.task_D2D1.Task(D2Dlink_1_IRD,applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
 			self.task_D2D2.Task(D2Dlink_2_IRD,applicaton2.getCriticalTaskDeadline(), systemTime,applicaton2.getComputaionWorkload(),applicaton2.getDataEntrySize(),applicaton2.getResultSize())
-
+			self.task_MEC.Task(MECoffloading, applicaton3.getCriticalTaskDeadline(), systemTime,
+								applicaton3.getComputaionWorkload(), applicaton3.getDataEntrySize(),
+								applicaton3.getResultSize())
+			self.task_D2D1.setPolicy(1,D2Dlink_1_IRD)
 
 			self.service_D2D1 = Service()
 			self.service_D2D2 = Service()
 			self.service_D2D1.Service(D2Dlink_1_ISD,applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
 			self.service_D2D2.Service(D2Dlink_2_ISD,applicaton2.getCriticalTaskDeadline(), systemTime,applicaton2.getComputaionWorkload(),applicaton2.getDataEntrySize(),applicaton2.getResultSize())
-			print(D2Dlink_1_IRD)
-			print(self.service_D2D1.getAsk())
+
 
 			# ---------------------------------------------------------------------------
 			# 3. Double Auction is started
 			# ---------------------------------------------------------------------------
 			D2D1_doubleauction_IRDcandidate, D2D1_doubleauction_ISDcandidate = self.matchRoleForDoubleAuction(D2Dlink_1_IRD, D2Dlink_1_ISD,1)
 			D2D2_doubleauction_IRDcandidate, D2D2_doubleauction_ISDcandidate = self.matchRoleForDoubleAuction(D2Dlink_2_IRD, D2Dlink_2_ISD,2)
-			print(D2D1_doubleauction_IRDcandidate)
 
 			self.temp_doubleAuction = doubleAuction()
 			win_IRD, self.win_ISD, bid_price, ask_price, K, remainingIRD = self.temp_doubleAuction.doubleAuction(D2D1_doubleauction_IRDcandidate,D2D1_doubleauction_ISDcandidate)
@@ -154,9 +166,7 @@ class SimulationEXE():
 			# 4. Multi-Armed Bandit is started
 			# ---------------------------------------------------------------------------
 			answerOfwinIRD = self.MABanswer()
-			print("엉",answerOfwinIRD)
 			opt_ISD = proposed_DTS(answerOfwinIRD,gamma_PDTS)
-			print('어엉',opt_ISD)
 			for index, (key, value) in enumerate(answerOfwinIRD.items()):
 				answerOfwinIRD[key] = {'mabResult': opt_ISD[index]}
 			sorting_opt_ISD = dict(sorted(answerOfwinIRD.items(), key=lambda x: x[1]['mabResult'],reverse=True))
@@ -178,11 +188,75 @@ class SimulationEXE():
 			for index,(key,value) in enumerate(sorting_opt_ISD.items()):
 				matchList[index][0] = sortedWinIRDID[index]
 				matchList[index][1] = key
-			print('후후',matchList)
+
+			flagIoTDevice = False
+			for index,(key,value) in enumerate(sorting_opt_ISD.items()):
+				if IIoT.verifyCPUFree(key) == True:
+					flagIoTDevice = True
+					IIoT.alterCPUStatus(self.CORE_OCCUPIED,key)
+
+			j = 0
+			for i in MECoffloading:
+				MECoffloadingDict[i] = {'deadline':self.task_MEC.getDeadline()[j]}
+				j += 1
+			sortedMECoffloadingDict = dict(sorted(MECoffloadingDict.items(), key=lambda x: x[1]['deadline'], reverse=True))
+			print("야호",sortedMECoffloadingDict)
+
+			for i, j in list(sortedMECoffloadingDict.items()):
+				flagMECServer = False
+				print(i)
+				if MEC.verifyCPUFree() == True:
+					flagMECServer = True
+					sortedMECoffloadingDict[i]['Policy'] = 2
+					MEC.occupyCPU()
+					print(sortedMECoffloadingDict[i],i)
+				# else:
+				# 	remainMECoffloading.append(i)
+				if MEC.occupyCPU() == False:
+					CloudOffloading.append(i)
+					sortedMECoffloadingDict[i]['Policy'] = 3
+
+			# D2D Task
+			completeTask = []
+			for i in range(len(matchList)-1,-1,-1):
+				if self.task_D2D1.verifyTaksFinish(systemTime,matchList[i][0]) == True:
+					numberTasksCanceledAndConcludedD2D += 1
+					IIoT.alterCPUStatus(self.CORE_FREE,matchList[i][1])
+					matchList.pop(i)
+				else:
+					processingTaskD2D.append(matchList[i])
+
+
+			# Server Task
+			for key,value in list(sortedMECoffloadingDict.items()):
+				if value['Policy'] == 2:
+					if self.task_MEC.verifyTaksFinish(systemTime,key) == True:
+						numberTasksCanceledAndConcludedMEC += 1
+						MEC.freeCPU()
+						sortedMECoffloadingDict.pop(key)
+					elif self.task_MEC.verifyTaksFinish(systemTime,key) == False:
+						processingTaskMEC.append(key)
+						print("dsfasd",key)
+				elif value['Policy'] == 3:
+					print("This is remaining task")
+			print(sortedMECoffloadingDict.keys())
+			print(processingTaskMEC)
+			print(self.task_MEC.getTaskStatus())
+			#마지막에 TASK_CANCELLED횟수와 TASK_CONCLUDED 횟수 세기
+
+			coefficientEnergy = 0.1
+			coefficientTime = 0.9
+			alpha, beta, gamma = 0.1, 0.1, 0.1
+
 			# scheduler_temp = scheduler()
-			# Scheduler_D2D1 = scheduler_temp.sheduler(task_D2D1, coefficientEnergy, coefficientTime, alpha,beta,gamma,IIoT,MEC)
+			# Scheduler_D2D1 = scheduler_temp.sheduler(self.task_D2D1, coefficientEnergy, coefficientTime, alpha,beta,gamma,IIoT,MEC)
 			# scheduler_temp = scheduler()
-			# Scheduler_D2D2 = scheduler_temp.sheduler(task_D2D2, coefficientEnergy, coefficientTime, alpha, beta, gamma, IIoT,MEC)
+			# Scheduler_D2D2 = scheduler_temp.sheduler(self.task_D2D2, coefficientEnergy, coefficientTime, alpha, beta, gamma, IIoT,MEC)
+
+			# remainingIRD
+
+
+			#if
 
 			systemTime += 1
 
@@ -213,11 +287,11 @@ class SimulationEXE():
 	def awgn(self,sinal):
 		regsnr = 54
 		sigpower = sum([math.pow(abs(sinal[i]), 2) for i in range(len(sinal))])
-		print(sigpower)
+		#print(sigpower)
 		sigpower = sigpower / len(sinal)
 		noisepower = sigpower / (math.pow(10, regsnr / 10))
 		noise = math.sqrt(noisepower) * (np.random.uniform(-1, 1, size=len(sinal)))
-		print(noise)
+		#print(noise)
 		return noise
 
 	def matchRoleForDoubleAuction(self,D2Dlink_IRD,D2Dlink_ISD,link):
