@@ -24,37 +24,49 @@ class Service():
         # self.poicy
 
 
-    def Service(self, deviceId, deadlineLatency, generateTime, computationWorkload, dataSize, returnDataSize):
-        self.deviceId = deviceId
-        self.ask = []
+    def Service(self, deviceId, remainASK,remainStauts_ISD,remain_ISD,deadlineLatency, generateTime, computationWorkload, dataSize, returnDataSize):
+        self.deviceId = deviceId + remain_ISD
+        self.ask = dict()
         self.generateTime = []
         self.deadlineLatency = []
-        self.computationWorkload = []
-        self.dataSize = []
+        self.computationWorkload = dict()
+        self.dataSize = dict()
         self.returnDataSize = []
-        self.taskStatus = []
+        self.taskStatus = dict()
         self.freq_level = []
         self.energyExe = []
         self.energyTransfer = []
         self.timeEXE = []
         self.timeTransfer = []
-        self.taskStatus = []
-        for i in range(len(deviceId)):
+        for i in deviceId:
 
-            self.ask.append(round(random.uniform(3, 10), 3))
+            self.ask.setdefault(i, round(random.uniform(3, 10), 3))
 
             self.generateTime.append(generateTime)  # Task generate time
             self.deadlineLatency.append(deadlineLatency)  # micro seconds
-            self.computationWorkload.append(computationWorkload)  # cpu cycles
-            self.dataSize.append(dataSize)
+            self.computationWorkload.setdefault(i,computationWorkload[i])  # cpu cycles
+            self.dataSize.setdefault(i,dataSize[i])
             self.returnDataSize.append(returnDataSize)
 
             self.energyExe.append(0)
             self.energyTransfer.append(0)
             self.timeEXE.append(0)
             self.timeTransfer.append(0)
-            self.taskStatus.append(self.TASK_ALIVE)
+            self.taskStatus.setdefault(i,self.TASK_ALIVE)
+        for i in remain_ISD:
+            self.ask.setdefault(i, remainASK[i])
 
+            self.generateTime.append(generateTime)  # Task generate time
+            self.deadlineLatency.append(deadlineLatency)  # micro seconds
+            self.computationWorkload.setdefault(i, computationWorkload[i])  # cpu cycles
+            self.dataSize.setdefault(i, dataSize[i])
+            self.returnDataSize.append(returnDataSize)
+
+            self.energyExe.append(0)
+            self.energyTransfer.append(0)
+            self.timeEXE.append(0)
+            self.timeTransfer.append(0)
+            self.taskStatus.setdefault(i, remainStauts_ISD[i])
         self.freq = nr.normal(1,0,len(deviceId))
         for i in range(len(deviceId)):
             if self.freq[i] < 0:
