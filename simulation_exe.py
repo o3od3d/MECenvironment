@@ -363,7 +363,7 @@ class SimulationEXE():
 			# 		completeTaskD2DIRD.append(i)
 			# 	print(self.task_D2D1.getTaskStatus()[i],"호로롤ㄹ",i)
 			# 	print(systemTime,":",self.task_D2D1.getBaseTime()[i],'+',self.task_D2D1.getDeadline()[i])
-
+			print(self.win_ISD)
 			print('집가고싶다',MECoffloadingDict)
 			# Server Task
 			for key,value in list(MECoffloadingDict.items()):

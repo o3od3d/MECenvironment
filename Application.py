@@ -6,7 +6,7 @@ import numpy as np
 class Application():
 
     def __init__(self):
-        print("Hello app")
+        print("Hello application")
         # self.id
         # # self.rateGeneration                    # micro seconds
         # # self.dataEntrySize                     # bits
