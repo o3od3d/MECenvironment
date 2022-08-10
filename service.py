@@ -157,13 +157,10 @@ class Service():
     def finalizeTask(self, systemTime):
         if self.deadlineLatency == -1:
             self.statusOftask = self.TASK_CONCLUEDE
-            print('dfa')
         elif systemTime < (self.generateTask + self.deadlineLatency):
             self.statusOftask = self.TASK_CONCLUEDE
-            print('fdas')
         else:
             self.statusOftask = self.TASK_CANCELLED
-            print("task fail")
 
 
 

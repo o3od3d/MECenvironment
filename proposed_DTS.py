@@ -3,7 +3,7 @@ from bandit2 import BanditTwoArmedHighLowFixed
 
 class proposed_DTS():
     def __init__(self,NumberOfIoT,totalRound):
-        print("multi armed bandit start")
+        print("bandit start")
         self.total_rounds = 500
         self.count = {i: 0 for i in range(NumberOfIoT)}#np.zeros(NumberOfIoT)
         self.sum_rewards = {i: 0 for i in range(NumberOfIoT)} #np.zeros(NumberOfIoT)
