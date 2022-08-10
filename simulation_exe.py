@@ -258,6 +258,7 @@ class SimulationEXE():
 			taskGenerateTimeD2D2 = self.task_D2D2.getBaseTime()
 			taskGenerateTimeMEC = self.task_MEC.getBaseTime()
 
+
 			self.service_D2D1.Service(D2Dlink_1_ISD_already,remainAsk_D2D1,remainStauts_D2D1_ISD,remainD2Dlink_1_ISD,applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
 			self.service_D2D2.Service(D2Dlink_2_ISD_already,remainAsk_D2D2,remainStauts_D2D2_ISD,remainD2Dlink_2_ISD,applicaton2.getCriticalTaskDeadline(), systemTime,applicaton2.getComputaionWorkload(),applicaton2.getDataEntrySize(),applicaton2.getResultSize())
 			remainStauts_D2D1_ISD = self.service_D2D1.getTaskStatus()
