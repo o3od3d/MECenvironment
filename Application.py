@@ -24,21 +24,20 @@ class Application():
         self.rateGeneration = rateGeneration  # micro seconds
         self.resultsSize = resultsSize  # bits
         self.computationalLoad = dict()
-        self.criticalTaksDeadline = dict()
         for i in tasknumber:
 
             self.dataEntrySize.setdefault(i,round(random.uniform(10,100),3))#[i]['datasize'] = round(random.uniform(10,100),3)#dataEntrySize  # bits
-            self.criticalTaksDeadline.setdefault(i, random.randint(1,5))
+
             self.computationalLoad.setdefault(i,round(random.uniform(10,100),3))#[i]['comp'] = round(random.uniform(10,100),3)
         for i in remainTask:
             self.dataEntrySize.setdefault(i,remainTaskData[i])#[i]['datasize'] = remainTaskData[i]
             self.computationalLoad.setdefault(i,remainCOMP[i])#[i]['comp'] = remainCOMP[i]
-            self.criticalTaksDeadline.setdefault(i, criticalTaksDeadline[i])
+
                 #computationalLoad
         if criticalTaskPercentages > 1 or criticalTaskPercentages < 0:
             print("app",self.id,"percente out of bounds")
         self.criticalTaskPercentages = criticalTaskPercentages  # percentages 0 ~1
-          # micro seconds
+        self.criticalTaksDeadline = criticalTaksDeadline  # micro seconds
         self.numberOfTask = 0
 
     def getID(self):

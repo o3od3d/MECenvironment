@@ -39,7 +39,7 @@ class SimulationEXE():
 		appList = dict()
 		sortedMECoffloadingDict = dict()
 		taskGenerationRate = 10 * math.pow(10, 4)
-		taskDataEntrySize = 36.288 * 8 * math.pow(10, 6)
+		taskDataEntrySize = 36.288 *8 * math.pow(10, 6)
 		taskResultSize = math.pow(10, 4)
 		computationalLoadCPUCycles = 20 * math.pow(10, 4)
 		deadlineCriticalTasks = 0.5 * math.pow(10, 6)
@@ -55,12 +55,8 @@ class SimulationEXE():
 		remainD2Dlink_1_ISD = []
 		remainD2Dlink_2_IRD = []
 		remainD2Dlink_2_ISD = []
-		numberOffailureTask = 0
-
 		completeTaskMEC = []
-		NumberOfIoT = 80
-		totalRound = 100
-		self.proposed_DTS = proposed_DTS(NumberOfIoT,totalRound)
+
 		appList['APP1'] = {'taskGen':taskGenerationRate,'taskDataSize':taskDataEntrySize,'taskResultSize':taskResultSize,'computationalLoadCycle':computationalLoadCPUCycles,'percentageOfCriticalTask':percentageOfCriticalTasks,'deadlineCriticaltask':deadlineCriticalTasks}
 		applicaton1 = Application()
 		applicaton2 = Application()
@@ -78,7 +74,7 @@ class SimulationEXE():
 		# 				   'deadlineCriticaltask': deadlineCriticalTasks}
 
 		listNumberOfTasks = [500, 5000]
-
+		NumberOfIoT = 150
 		listNumberOfMEC = [1]
 		listOfIIoTDevice = []
 		self.listOfMECServer = []
@@ -134,13 +130,7 @@ class SimulationEXE():
 		D2Dlink_1_ISD_already = []
 		D2Dlink_2_IRD_already = []
 		D2Dlink_2_ISD_already = []
-		remainDeadlined2d1 = dict()
-		remainDeadlined2d2 = dict()
-		remainDeadlineMEC = dict()
-		taskGenerateTimeD2D1 = dict()
-		taskGenerateTimeD2D2 = dict()
-		taskGenerateTimeMEC = dict()
-		while systemTime != totalRound:
+		while systemTime != 10:
 			# ---------------------------------------------------------------------------
 			#  1. Initiates simulation
 			# ---------------------------------------------------------------------------
@@ -174,9 +164,6 @@ class SimulationEXE():
 				D2Dlink_1_ISD_already = D2Dlink_1_ISD
 				D2Dlink_2_IRD_already = D2Dlink_2_IRD
 				D2Dlink_2_ISD_already = D2Dlink_2_ISD
-				# taskGenerateTimeD2D1 = {i:systemTime for i in range(len(D2Dlink_1_IRD))}
-				# taskGenerateTimeD2D2 = {i: systemTime for i in range(len(D2Dlink_2_IRD))}
-				# taskGenerateTimeMEC = {i: systemTime for i in range(len(MECoffloading))}
 			elif systemTime == subSystemTime:
 				rateOfGeneratedTasks = applicaton1.getRateGenerate()
 				IIoT = IIoTDevice()
@@ -224,39 +211,32 @@ class SimulationEXE():
 			# ---------------------------------------------------------------------------
 			self.app = applicaton1.application('app1', taskGenerationRate, taskDataEntrySize, taskResultSize,
 											   computationalLoadCPUCycles, percentageOfCriticalTasks,
-											   remainDeadlined2d1,D2Dlink_1_already,totalRemain,remainTaskDataSize,remainTaskCOMP)
+											   deadlineCriticalTasks,D2Dlink_1_already,totalRemain,remainTaskDataSize,remainTaskCOMP)
 			self.app2 = applicaton2.application('app2', taskGenerationRate, taskDataEntrySize, taskResultSize,
 											   computationalLoadCPUCycles, percentageOfCriticalTasks,
-											   remainDeadlined2d2, D2Dlink_2_already,totalRemain2,remainTaskDataSize2,remainTaskCOMP2)
+											   deadlineCriticalTasks, D2Dlink_2_already,totalRemain2,remainTaskDataSize2,remainTaskCOMP2)
 			self.app3 = applicaton3.application('app3', taskGenerationRate, taskDataEntrySize, taskResultSize,
 												computationalLoadCPUCycles, percentageOfCriticalTasks,
-												remainDeadlineMEC, MECoffloading_already,totalRemainMEC,remainTaskDataSizeMEC,remainTaskCOMPMEC)
-			remainDeadlined2d1 = applicaton1.getCriticalTaskDeadline()
-			remainDeadlined2d2 = applicaton2.getCriticalTaskDeadline()
-			remainDeadlineMEC = applicaton3.getCriticalTaskDeadline()
-			print("dfasdfasdfasd",remainDeadlined2d1)
+												deadlineCriticalTasks, MECoffloading_already,totalRemainMEC,remainTaskDataSizeMEC,remainTaskCOMPMEC)
 
-			self.task_D2D1.Task(D2Dlink_1_IRD_already,remainD2Dlink_1_IRD,remainBid_D2D1,remainStatus_D2D1,applicaton1.getCriticalTaskDeadline(), taskGenerateTimeD2D1,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize(),systemTime)
-			self.task_D2D2.Task(D2Dlink_2_IRD_already,remainD2Dlink_2_IRD,remainBid_D2D2,remainStatus_D2D2,applicaton2.getCriticalTaskDeadline(), taskGenerateTimeD2D2,applicaton2.getComputaionWorkload(),applicaton2.getDataEntrySize(),applicaton2.getResultSize(),systemTime)
-			self.task_MEC.Task(MECoffloading_already, totalRemainMEC,remainBid_MEC,remainStatus_MEC,applicaton3.getCriticalTaskDeadline(), taskGenerateTimeMEC,
+
+
+			self.task_D2D1.Task(D2Dlink_1_IRD_already,remainD2Dlink_1_IRD,remainBid_D2D1,remainStatus_D2D1,applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
+			self.task_D2D2.Task(D2Dlink_2_IRD_already,remainD2Dlink_2_IRD,remainBid_D2D2,remainStatus_D2D2,applicaton2.getCriticalTaskDeadline(), systemTime,applicaton2.getComputaionWorkload(),applicaton2.getDataEntrySize(),applicaton2.getResultSize())
+			self.task_MEC.Task(MECoffloading_already, totalRemainMEC,remainBid_MEC,remainStatus_MEC,applicaton3.getCriticalTaskDeadline(), systemTime,
 								applicaton3.getComputaionWorkload(), applicaton3.getDataEntrySize(),
-								applicaton3.getResultSize(),systemTime)
+								applicaton3.getResultSize())
 			self.task_D2D1.setPolicy(1,D2Dlink_1_IRD_already)
 			print("dsfasdfasdf",len(D2Dlink_1_IRD_already),D2Dlink_1_IRD_already)
 			print(len(D2Dlink_1_IRD),D2Dlink_1_IRD)
 			print(len(remainD2Dlink_1_IRD),remainD2Dlink_1_IRD)
 			print(len(self.task_D2D1.getDeviceId()),self.task_D2D1.getDeviceId())
-			print(len(totalRemainMEC),totalRemainMEC)
-			print(len(MECoffloading_already),MECoffloading_already)
 			remainBid_D2D1 = self.task_D2D1.getBid()
 			remainStatus_D2D1 = self.task_D2D1.getTaskStatus()
 			remainBid_D2D2 = self.task_D2D2.getBid()
 			remainStatus_D2D2 = self.task_D2D2.getTaskStatus()
 			remainBid_MEC = self.task_MEC.getBid()
 			remainStatus_MEC = self.task_MEC.getTaskStatus()
-			taskGenerateTimeD2D1 = self.task_D2D1.getBaseTime()
-			taskGenerateTimeD2D2 = self.task_D2D2.getBaseTime()
-			taskGenerateTimeMEC = self.task_MEC.getBaseTime()
 
 			self.service_D2D1.Service(D2Dlink_1_ISD_already,remainAsk_D2D1,remainStauts_D2D1_ISD,remainD2Dlink_1_ISD,applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
 			self.service_D2D2.Service(D2Dlink_2_ISD_already,remainAsk_D2D2,remainStauts_D2D2_ISD,remainD2Dlink_2_ISD,applicaton2.getCriticalTaskDeadline(), systemTime,applicaton2.getComputaionWorkload(),applicaton2.getDataEntrySize(),applicaton2.getResultSize())
@@ -280,10 +260,9 @@ class SimulationEXE():
 			answerOfwinIRD = self.MABanswer()
 			if answerOfwinIRD == False:
 				continue
-			opt_ISD = self.proposed_DTS.proposed_DTS(answerOfwinIRD,gamma_PDTS)
-			print("우에멘에에ㅔ에",opt_ISD)
+			opt_ISD = proposed_DTS(answerOfwinIRD,gamma_PDTS)
 			for index, (key, value) in enumerate(answerOfwinIRD.items()):
-				answerOfwinIRD[key] = {'mabResult': opt_ISD[key]}
+				answerOfwinIRD[key] = {'mabResult': opt_ISD[index]}
 			sorting_opt_ISD = dict(sorted(answerOfwinIRD.items(), key=lambda x: x[1]['mabResult'],reverse=True))
 
 			# ---------------------------------------------------------------------------
@@ -299,8 +278,8 @@ class SimulationEXE():
 						print(sortingWinIRD[key]['dataSize'],sortingWinIRD[key]['computationWorkload'])
 						sortingWinIRD[key] = {'order': sortingWinIRD[key]['dataSize'] * sortingWinIRD[key]['computationWorkload']}
 						#continue
-			#sortedWinIRD = dict(sorted(sortingWinIRD.items(),key=lambda x: x[1]['order'], reverse=True))
-			sortedWinIRDID = list(sortingWinIRD.keys())
+			sortedWinIRD = dict(sorted(sortingWinIRD.items(),key=lambda x: x[1]['order'], reverse=True))
+			sortedWinIRDID = list(sortedWinIRD.keys())
 			print(self.task_D2D1.getDeviceId())
 
 			matchList = [[0 for n in range(2)] for m in range(len(sorting_opt_ISD))]
@@ -317,23 +296,25 @@ class SimulationEXE():
 			j = 0
 
 			print("냐",self.task_MEC.getDeadline())
-			temp_MECoffloading = totalRemainMEC + MECoffloading_already
-			for i in temp_MECoffloading:
+			for i in MECoffloading:
 				MECoffloadingDict[i] = {'deadline':self.task_MEC.getDeadline()[i]}
 				j += 1
-			#sortedMECoffloadingDict = dict(sorted(MECoffloadingDict.items(), key=lambda x: x[1]['deadline']))
-			print("야호",MECoffloadingDict)
+			sortedMECoffloadingDict = dict(sorted(MECoffloadingDict.items(), key=lambda x: x[1]['deadline'], reverse=True))
+			print("야호",sortedMECoffloadingDict)
 
-			for i, j in list(MECoffloadingDict.items()):
-
+			for i, j in list(sortedMECoffloadingDict.items()):
+				flagMECServer = False
 				print(i)
-				if MEC.occupyCPU(i) == True:
-					MECoffloadingDict[i]['Policy'] = 2
-					#MEC.occupyCPU()
-
-				else:
+				if MEC.verifyCPUFree() == True:
+					flagMECServer = True
+					sortedMECoffloadingDict[i]['Policy'] = 2
+					MEC.occupyCPU()
+					print(sortedMECoffloadingDict[i],i)
+				# else:
+				# 	remainMECoffloading.append(i)
+				if MEC.occupyCPU() == False:
 					CloudOffloading.append(i)
-					MECoffloadingDict[i]['Policy'] = 3
+					sortedMECoffloadingDict[i]['Policy'] = 3
 
 			# D2D Task
 			for i in range(len(matchList)-1,-1,-1):
@@ -342,70 +323,48 @@ class SimulationEXE():
 					IIoT.alterCPUStatus(self.CORE_FREE,matchList[i][1])
 					completeTaskD2DIRD.append(matchList[i][0])
 					completeTaskD2DISD.append(matchList[i][1])
+					print(matchList[i][0])
 					matchList.pop(i)
 
 				else:
 					processingTaskD2D.append(matchList[i])
-					numberOffailureTask += 1
-			temp_D2D1Offloading = remainD2Dlink_1_IRD + D2Dlink_1_IRD_already
-			temp2_D2D1Offloading = [x for x in temp_D2D1Offloading if x not in completeTaskD2DIRD]
-			for i in temp2_D2D1Offloading:
-				if self.task_D2D1.checkTaskTime(systemTime,i) == True:
-					completeTaskD2DIRD.append(i)
-					numberOffailureTask += 1
-					print(i)
-				else:
-					print('이게맞나',i)
-
-			# for i in D2Dlink_1_IRD:
-			# 	self.task_D2D1.finalizeTask(systemTime,i)
-			# 	if self.task_D2D1.getTaskStatus()[i] == 3:
-			# 		completeTaskD2DIRD.append(i)
-			# 	print(self.task_D2D1.getTaskStatus()[i],"호로롤ㄹ",i)
-			# 	print(systemTime,":",self.task_D2D1.getBaseTime()[i],'+',self.task_D2D1.getDeadline()[i])
-
-			print('집가고싶다',MECoffloadingDict)
+			print("냐",self.task_MEC.getTaskStatus())
+			print(sortedMECoffloadingDict)
 			# Server Task
-			for key,value in list(MECoffloadingDict.items()):
+			for key,value in list(sortedMECoffloadingDict.items()):
 				if value['Policy'] == 2:
-					print("우씨",key)
-					#print(self.task_MEC.verifyTaksFinish(systemTime,key))
 					if self.task_MEC.verifyTaksFinish(systemTime,key) == True:
 						numberTasksCanceledAndConcludedMEC += 1
 						MEC.freeCPU()
 						completeTaskMEC.append(key)
-						MECoffloadingDict.pop(key)
-
-					# elif self.task_MEC.verifyTaksFinish(systemTime,key) == False:
-					# 	processingTaskMEC.append(key)
-					# 	print("dsfasd",key)
+						sortedMECoffloadingDict.pop(key)
+					elif self.task_MEC.verifyTaksFinish(systemTime,key) == False:
+						processingTaskMEC.append(key)
+						print("dsfasd",key)
 				elif value['Policy'] == 3:
-					if self.task_MEC.checkTaskTime(systemTime,key) == True:
-						completeTaskMEC.append(key)
-						print('ㅇㄴㄻ',key)
-						numberOffailureTask += 1
-
-
-			MECoffloadingDict.clear()
+					print("This is remaining task")
+			print(sortedMECoffloadingDict.keys())
+			print(processingTaskMEC)
+			print(completeTaskMEC)
+			print(self.task_MEC.getTaskStatus())
+			sortedMECoffloadingDict.clear()
 			#마지막에 TASK_CANCELLED횟수와 TASK_CONCLUDED 횟수 세기
 
 			coefficientEnergy = 0.1
 			coefficientTime = 0.9
 			alpha, beta, gamma = 0.1, 0.1, 0.1
+
 			# scheduler_temp = scheduler()
 			# Scheduler_D2D1 = scheduler_temp.sheduler(self.task_D2D1, coefficientEnergy, coefficientTime, alpha,beta,gamma,IIoT,MEC)
 			# scheduler_temp = scheduler()
 			# Scheduler_D2D2 = scheduler_temp.sheduler(self.task_D2D2, coefficientEnergy, coefficientTime, alpha, beta, gamma, IIoT,MEC)
 
+			# remainingIRD
 
-			temp_D2D1_FAIL = [x for x in temp_D2D1Offloading if x not in completeTaskD2DIRD]
-			temp_MEC_FAIL = [x for x in MECoffloading if x not in completeTaskMEC]
+
+			#if
+
 			systemTime += 1
-			if systemTime == totalRound:
-				temp_fail = len(temp_D2D1_FAIL) + len(temp_MEC_FAIL)
-				numberOffailureTask += temp_fail
-				print(numberOffailureTask,temp_D2D1_FAIL,temp_MEC_FAIL)
-
 
 	def MABanswer(self):
 		if len(self.win_ISD) == 0:
