@@ -23,36 +23,49 @@ class Task():
         # self.poicy
 
 
-    def Task(self, deviceId, deadlineLatency, generateTime, computationWorkload, dataSize, returnDataSize):
-        self.taskId = []
-        self.deviceId = deviceId
-        self.generateTime = []
-        self.deadlineLatency = []
-        self.computationWorkload = []
-        self.dataSize = []
+    def Task(self, deviceId, remainTask,remainBid_D2D1,remainStatus_D2D1,deadlineLatency, generateTime, computationWorkload, dataSize, returnDataSize):
+        self.taskId = deviceId + remainTask
+        self.deviceId = deviceId + remainTask
+        self.generateTime = dict()
+        self.deadlineLatency = dict()
+        self.computationWorkload = dict()
+        self.dataSize = dict()
         self.returnDataSize = []
-        self.bid = []
-        self.taskStatus = []
+        self.bid = dict()
         self.energyExe = []
         self.energyTransfer = []
         self.timeEXE = []
         self.timeTransfer = []
-        self.taskStatus = []
-        for i in range(len(deviceId)):
-            self.taskId.append(i)
-            self.generateTime.append(generateTime)  # Task generate time
-            self.deadlineLatency.append(deadlineLatency)  # micro seconds
-            self.computationWorkload.append(computationWorkload[i])  # cpu cycles
-            self.dataSize.append(dataSize[i])
+        self.taskStatus = dict()
+        self.policy = []
+        for i in deviceId:
+            self.generateTime.setdefault(i,generateTime)  # Task generate time
+            self.deadlineLatency.setdefault(i,round(random.uniform(0, 14), 3))  # micro seconds
+            self.computationWorkload.setdefault(i,computationWorkload[i])  # cpu cycles
+            self.dataSize.setdefault(i,dataSize[i])
             self.returnDataSize.append(returnDataSize)
 
-            self.bid.append(round(random.uniform(0, 14), 3))
+            self.bid.setdefault(i,round(random.uniform(0, 14), 3))
 
             self.energyExe.append(0)
             self.energyTransfer.append(0)
             self.timeEXE.append(0)
             self.timeTransfer.append(0)
-            self.taskStatus.append(self.TASK_ALIVE)
+            self.taskStatus.setdefault(i,self.TASK_ALIVE)
+        for i in remainTask:
+            self.generateTime.setdefault(i, generateTime)  # Task generate time
+            self.deadlineLatency.setdefault(i, round(random.uniform(0, 14), 3))  # micro seconds
+            self.computationWorkload.setdefault(i, computationWorkload[i])  # cpu cycles
+            self.dataSize.setdefault(i, dataSize[i])
+            self.returnDataSize.append(returnDataSize)
+
+            self.bid.setdefault(i, remainBid_D2D1[i])
+
+            self.energyExe.append(0)
+            self.energyTransfer.append(0)
+            self.timeEXE.append(0)
+            self.timeTransfer.append(0)
+            self.taskStatus.setdefault(i, remainStatus_D2D1[i])
 
     def getDeviceId(self):
         return self.deviceId
@@ -85,7 +98,7 @@ class Task():
         return self.returnDataSize
 
     def getPolicy(self):
-        return self.getPolicy()
+        return self.policy
 
     def getTotalEneryCon(self):
         return self.energyExe + self.energyTransfer
@@ -96,8 +109,8 @@ class Task():
     def getTransferEnery(self):
         return self.energyTransfer
 
-    def getTotalElpTime(self):
-        return self.timeExe + self.timeTransfer
+    def getTotalElpTime(self,key):
+        return self.getEXEtIME()[key] + self.timeTransfer[key]
 
     def getEXEtIME(self):
         return self.timeEXE
@@ -117,28 +130,33 @@ class Task():
     def setTransferTime(self, transferTime):
         self.timeTransfer = transferTime
 
-    def setPolicy(self,policy):
+    def setPolicy(self,policy,D2Dlink_1_IRD):
         if policy != 1 and policy != 2 and policy != 3:
             print("error",self.getIDtask())
-        self.policy = policy
+        for i in range(len(D2Dlink_1_IRD)):
+            self.policy.append(policy)
 
-    def verifyTaksFinish(self, systemTime):
-        if self.statusOftask != self.TASK_ALIVE:
+    def verifyTaksFinish(self, systemTime,key):
+        temp = 0
+        for i in range(len(self.deviceId)):
+            if key == self.deviceId[i]:
+                temp = i
+        if self.taskStatus[key] != self.TASK_ALIVE:
             print("error",self.taskId,"is already finished")
-        timeToConclusion = self.generateTime + self.getTotalElpTime()
+        timeToConclusion = self.generateTime[key] + self.getTotalElpTime(temp)
         if timeToConclusion == systemTime:
-            self.finalizeTask(systemTime)
+            self.finalizeTask(systemTime,key)
             return True
         return False
 
 
-    def finalizeTask(self, systemTime):
-        if self.deadlineLatency == -1:
-            self.statusOftask = self.TASK_CONCLUEDE
-        elif systemTime < (self.generateTask + self.deadlineLatency):
-            self.statusOftask = self.TASK_CONCLUEDE
+    def finalizeTask(self, systemTime,key):
+        if self.deadlineLatency[key] == -1:
+            self.taskStatus[key] = self.TASK_CONCLUEDE
+        elif systemTime < (self.generateTime[key] + self.deadlineLatency[key]):
+            self.taskStatus[key] = self.TASK_CONCLUEDE
         else:
-            self.statusOftask = self.TASK_CANCELLED
+            self.taskStatus[key] = self.TASK_CANCELLED
 
 
 

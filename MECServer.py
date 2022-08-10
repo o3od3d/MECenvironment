@@ -86,9 +86,9 @@ class MECServer():
 
     def occupyCPU(self):
         if self.verifyCPUFree() == True:
-            for i in range(self.MAX_CPUs):
+            for i in range(self.Max_CPUs):
                 if self.statusCPUs[i] == self.CPU_FREE:
-                    self.statusCPUs.remove(i)
+                    self.statusCPUs.pop(i)
                     self.statusCPUs.append(self.Cpu_occupied)
                     return True
         print(self.MECID,"all cpu occupied")
@@ -97,8 +97,8 @@ class MECServer():
     def freeCPU(self):
         for i in range(self.Max_CPUs):
             if self.statusCPUs[i] == self.Cpu_occupied:
-                self.statusCPUs.remove(i)
-                self.statusCPUs.append(i)
+                self.statusCPUs.pop(i)
+                self.statusCPUs.append(self.CPU_FREE)
                 return True
         print(self.MECID,"All cpu already free")
         return False

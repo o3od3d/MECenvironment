@@ -1,10 +1,12 @@
 import random
 
+import numpy as np
+
 
 class Application():
 
     def __init__(self):
-        print("app")
+        print("Hello app")
         # self.id
         # # self.rateGeneration                    # micro seconds
         # # self.dataEntrySize                     # bits
@@ -16,17 +18,21 @@ class Application():
         # # percentages 0 ~1
         # if self.criticalTaskPercentages > 1 or self.criticalTaskPercentages < 0:
         #     print("app",self.id,"percente out of bounds")
-    def application(self, id, rateGeneration, dataEntrySize, resultsSize, computationalLoad, criticalTaskPercentages, criticalTaksDeadline,tasknumber):
+    def application(self, id, rateGeneration, dataEntrySize, resultsSize, computationalLoad, criticalTaskPercentages, criticalTaksDeadline,tasknumber,remainTask,remainTaskData,remainCOMP):
         self.id = id
-        self.dataEntrySize = []
+        self.dataEntrySize = dict()
         self.rateGeneration = rateGeneration  # micro seconds
         self.resultsSize = resultsSize  # bits
-        self.computationalLoad = []
-        for i in range(len(tasknumber)):
+        self.computationalLoad = dict()
+        for i in tasknumber:
 
-            self.dataEntrySize.append(round(random.uniform(10,100),3))#dataEntrySize  # bits
+            self.dataEntrySize.setdefault(i,round(random.uniform(10,100),3))#[i]['datasize'] = round(random.uniform(10,100),3)#dataEntrySize  # bits
 
-            self.computationalLoad.append(round(random.uniform(10,100),3))
+            self.computationalLoad.setdefault(i,round(random.uniform(10,100),3))#[i]['comp'] = round(random.uniform(10,100),3)
+        for i in remainTask:
+            self.dataEntrySize.setdefault(i,remainTaskData[i])#[i]['datasize'] = remainTaskData[i]
+            self.computationalLoad.setdefault(i,remainCOMP[i])#[i]['comp'] = remainCOMP[i]
+
                 #computationalLoad
         if criticalTaskPercentages > 1 or criticalTaskPercentages < 0:
             print("app",self.id,"percente out of bounds")
