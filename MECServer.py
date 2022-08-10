@@ -10,7 +10,7 @@ class MECServer():
         # self.statusCPUs
         self.Cpu_occupied = True
         self.CPU_FREE = False
-        self.Max_CPUs = 20
+        self.Max_CPUs = 10
         #self.pairsFrequencyVoltage == []
     def MECserver(self, MECnumber):
         self.MECID = []
@@ -72,11 +72,7 @@ class MECServer():
         energy = self.calculateDynamicPower(key,operationFrequency, voltage) * self.calculateExecutionTime(operationFrequency, compuataionWorkload)
         return energy
 
-    def verifyCPUFree(self):
-        for status in self.statusCPUs:
-            if status == self.CPU_FREE:
-                return True
-        return False
+
 
     def verifyCPUFree2(self,key):
         for status in self.statusCPUs[key]:
@@ -84,12 +80,19 @@ class MECServer():
                 return True
         return False
 
-    def occupyCPU(self):
+    def verifyCPUFree(self):
+        for status in self.statusCPUs:
+            if status == self.CPU_FREE:
+                return True
+        return False
+
+    def occupyCPU(self,key):
         if self.verifyCPUFree() == True:
             for i in range(self.Max_CPUs):
                 if self.statusCPUs[i] == self.CPU_FREE:
-                    self.statusCPUs.pop(i)
-                    self.statusCPUs.append(self.Cpu_occupied)
+                    #self.statusCPUs.pop(i)
+                    #self.statusCPUs.append(self.Cpu_occupied)
+                    self.statusCPUs[i] = self.Cpu_occupied
                     return True
         print(self.MECID,"all occupied")
         return False
