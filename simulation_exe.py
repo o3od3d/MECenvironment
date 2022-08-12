@@ -4,7 +4,7 @@ import random
 import numpy as np
 import numpy.random as nr
 from sklearn.preprocessing import minmax_scale
-
+import multiprocessing as mp
 from Application import Application
 from IIoTDevice import IIoTDevice
 from MECServer import MECServer
@@ -30,7 +30,6 @@ class SimulationEXE():
 		self.TASK_CANCELED = 3
 
 	def main(self):
-
 		# discount factor
 		gamma_PDTS = 0.99
 		gamma_DTS = 0.99
@@ -87,8 +86,8 @@ class SimulationEXE():
 		subSystemTime = 500
 		numberCreatedTasks = 0
 		numberSuccessTasks = 0
-		count1 = 0
-		count2 = 0
+		numberOfTaskD2D1 = 0
+		numberOfTaskMEC = 0
 		count3 = 0
 		D2Dlink_1 = []
 		D2Dlink_1_IRD = []
@@ -134,6 +133,11 @@ class SimulationEXE():
 		D2Dlink_1_ISD_already = []
 		D2Dlink_2_IRD_already = []
 		D2Dlink_2_ISD_already = []
+		regretSumOfPDTS = np.zeros(totalRound)
+		utilityOfIBD_D2D1 = np.zeros(totalRound)
+		utilityOfIRD_D2D1 = np.zeros(totalRound)
+		utilityOfISD_D2D1 = np.zeros(totalRound)
+
 		remainDeadlined2d1 = dict()
 		remainDeadlined2d2 = dict()
 		remainDeadlineMEC = dict()
@@ -257,7 +261,11 @@ class SimulationEXE():
 			taskGenerateTimeD2D1 = self.task_D2D1.getBaseTime()
 			taskGenerateTimeD2D2 = self.task_D2D2.getBaseTime()
 			taskGenerateTimeMEC = self.task_MEC.getBaseTime()
-
+			numberOfTaskD2D1 += len(D2Dlink_1_IRD_already)
+			numberOfTaskMEC += len(MECoffloading_already)
+			print('task 개수',len(D2Dlink_1_IRD_already),D2Dlink_1_IRD_already)
+			print(len(MECoffloading_already),MECoffloading_already)
+			print(numberOfTaskD2D1,numberOfTaskMEC)
 			self.service_D2D1.Service(D2Dlink_1_ISD_already,remainAsk_D2D1,remainStauts_D2D1_ISD,remainD2Dlink_1_ISD,applicaton1.getCriticalTaskDeadline(), systemTime,applicaton1.getComputaionWorkload(),applicaton1.getDataEntrySize(),applicaton1.getResultSize())
 			self.service_D2D2.Service(D2Dlink_2_ISD_already,remainAsk_D2D2,remainStauts_D2D2_ISD,remainD2Dlink_2_ISD,applicaton2.getCriticalTaskDeadline(), systemTime,applicaton2.getComputaionWorkload(),applicaton2.getDataEntrySize(),applicaton2.getResultSize())
 			remainStauts_D2D1_ISD = self.service_D2D1.getTaskStatus()
@@ -272,19 +280,22 @@ class SimulationEXE():
 
 			self.temp_doubleAuction = doubleAuction()
 			win_IRD, self.win_ISD, bid_price, ask_price, K, remainingIRD = self.temp_doubleAuction.doubleAuction(D2D1_doubleauction_IRDcandidate,D2D1_doubleauction_ISDcandidate)
-			print("얌",len(win_IRD),win_IRD)
-			print(len(self.win_ISD),self.win_ISD)
+
 			# ---------------------------------------------------------------------------
 			# 4. Multi-Armed Bandit is started
 			# ---------------------------------------------------------------------------
-			answerOfwinIRD = self.MABanswer()
-			if answerOfwinIRD == False:
+			answerOfwinISD = self.MABanswer()
+			if answerOfwinISD == False:
 				continue
-			opt_ISD = self.proposed_DTS.proposed_DTS(answerOfwinIRD,gamma_PDTS)
-			print("우에멘에에ㅔ에",opt_ISD)
-			for index, (key, value) in enumerate(answerOfwinIRD.items()):
-				answerOfwinIRD[key] = {'mabResult': opt_ISD[key]}
-			sorting_opt_ISD = dict(sorted(answerOfwinIRD.items(), key=lambda x: x[1]['mabResult'],reverse=True))
+			opt_ISD = self.proposed_DTS.proposed_DTS(answerOfwinISD,gamma_PDTS)
+
+			regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + self.regret_analysis(self.win_ISD, opt_ISD)
+			for index, (key, value) in enumerate(answerOfwinISD.items()):
+				answerOfwinISD[key]['mabResult'] = opt_ISD[key]
+
+			sorting_opt_ISD = dict(sorted(answerOfwinISD.items(), key=lambda x: x[1]['mabResult'],reverse=True))
+
+			#regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + self.regret_analysis(self.win_ISD,opt_ISD)
 
 			# ---------------------------------------------------------------------------
 			# 5. Matching IRD and ISD
@@ -301,13 +312,11 @@ class SimulationEXE():
 						#continue
 			#sortedWinIRD = dict(sorted(sortingWinIRD.items(),key=lambda x: x[1]['order'], reverse=True))
 			sortedWinIRDID = list(sortingWinIRD.keys())
-			print(self.task_D2D1.getDeviceId())
 
 			matchList = [[0 for n in range(2)] for m in range(len(sorting_opt_ISD))]
 			for index,(key,value) in enumerate(sorting_opt_ISD.items()):
 				matchList[index][0] = sortedWinIRDID[index]
 				matchList[index][1] = key
-			print("sdflkasdnf", matchList)
 			flagIoTDevice = False
 			for index,(key,value) in enumerate(sorting_opt_ISD.items()):
 				if IIoT.verifyCPUFree(key) == True:
@@ -315,8 +324,6 @@ class SimulationEXE():
 					IIoT.alterCPUStatus(self.CORE_OCCUPIED,key)
 
 			j = 0
-
-			print("냐",self.task_MEC.getDeadline())
 			temp_MECoffloading = totalRemainMEC + MECoffloading_already
 			for i in temp_MECoffloading:
 				MECoffloadingDict[i] = {'deadline':self.task_MEC.getDeadline()[i]}
@@ -325,15 +332,15 @@ class SimulationEXE():
 			print("야호",MECoffloadingDict)
 
 			for i, j in list(MECoffloadingDict.items()):
-
-				print(i)
 				if MEC.occupyCPU(i) == True:
 					MECoffloadingDict[i]['Policy'] = 2
 					#MEC.occupyCPU()
-
 				else:
 					CloudOffloading.append(i)
 					MECoffloadingDict[i]['Policy'] = 3
+
+			# utility computation
+			utilityOfIBD_D2D1[systemTime], utilityOfIRD_D2D1[systemTime],utilityOfISD_D2D1[systemTime] = self.utilityComputation(len(matchList),bid_price,ask_price,self.win_ISD,win_IRD)
 
 			# D2D Task
 			for i in range(len(matchList)-1,-1,-1):
@@ -364,11 +371,10 @@ class SimulationEXE():
 			# 	print(self.task_D2D1.getTaskStatus()[i],"호로롤ㄹ",i)
 			# 	print(systemTime,":",self.task_D2D1.getBaseTime()[i],'+',self.task_D2D1.getDeadline()[i])
 
-			print('집가고싶다',MECoffloadingDict)
 			# Server Task
 			for key,value in list(MECoffloadingDict.items()):
 				if value['Policy'] == 2:
-					print("우씨",key)
+
 					#print(self.task_MEC.verifyTaksFinish(systemTime,key))
 					if self.task_MEC.verifyTaksFinish(systemTime,key) == True:
 						numberTasksCanceledAndConcludedMEC += 1
@@ -401,11 +407,32 @@ class SimulationEXE():
 			temp_D2D1_FAIL = [x for x in temp_D2D1Offloading if x not in completeTaskD2DIRD]
 			temp_MEC_FAIL = [x for x in MECoffloading if x not in completeTaskMEC]
 			systemTime += 1
+
 			if systemTime == totalRound:
 				temp_fail = len(temp_D2D1_FAIL) + len(temp_MEC_FAIL)
 				numberOffailureTask += temp_fail
 				print(numberOffailureTask,temp_D2D1_FAIL,temp_MEC_FAIL)
+				numberOfTotalTask = numberOfTaskMEC + numberOfTaskD2D1
+				print(numberOfTotalTask)
+				taskFailureProb = numberOffailureTask / numberOfTotalTask
+				print(taskFailureProb)
+				print(regretSumOfPDTS)
+				print(utilityOfISD_D2D1)
+				print(utilityOfIRD_D2D1)
+				print(utilityOfIBD_D2D1)
 
+	def utilityComputation(self,num, bid, ask, ISD_actualAsk, IRD_actualBid):
+		ISD = 0
+		IRD = 0
+		for key, value in list(ISD_actualAsk.items()):
+			ISD += (ask - value['ask'])
+			print('ask_isd',key,ask,value['ask'],ISD)
+		for key, value in list(IRD_actualBid.items()):
+			IRD += (value['bid'] - bid)
+			print('bid_ird',key,value['bid'],bid,IRD)
+		IBD = num * (bid - ask)
+		print(num,IBD,bid-ask)
+		return IBD, IRD, ISD
 
 	def MABanswer(self):
 		if len(self.win_ISD) == 0:
@@ -418,7 +445,7 @@ class SimulationEXE():
 			temp_importance = []
 			for index, (key, value) in enumerate(self.win_ISD.items()):
 				SNR = ((channelGain[index] ** 2) * ISD_BW) / (noise[index] ** 2)
-				self.win_ISD[key] = {'importance': ISD_BW * np.log2(1 + SNR)}
+				self.win_ISD[key]['importance'] = ISD_BW * np.log2(1 + SNR)
 				temp_importance.append(ISD_BW * np.log2(1 + SNR))
 
 			temp_importance = minmax_scale(temp_importance)
@@ -430,11 +457,22 @@ class SimulationEXE():
 				else:
 					continue
 			for index,(key,value) in enumerate(self.win_ISD.items()):
-				self.win_ISD[key] = temp_importance[index]
+				self.win_ISD[key]['importance'] = temp_importance[index]
 
 			return self.win_ISD
 		return False
 
+	# regret function
+	def regret_analysis(self,win_ISD, extract_prob):
+		maxArm = max(win_ISD.items(), key=lambda x: x[1]['importance'])
+		print(maxArm)
+		maxArm_value = maxArm[1]['importance']
+		extract_maxArm = max(extract_prob.values())
+		regretSum = abs(maxArm_value - extract_maxArm)
+		print(maxArm_value,extract_maxArm,regretSum)
+		return regretSum
+
+	# Addictive White Gaussian Noise function
 	def awgn(self,sinal):
 		regsnr = 54
 		sigpower = sum([math.pow(abs(sinal[i]), 2) for i in range(len(sinal))])

@@ -70,11 +70,11 @@ class BanditTwoArmedHighLowFixed(BanditEnv):
         self.arm_reward = arm_reward
         self.arm_count = len(arm_count)
         arm_prob = np.zeros(self.arm_count)#{i: 0 for i in arm_count}
-        maxArm = max(self.arm_reward.items(), key=lambda x: x[1])
+        maxArm = max(self.arm_reward.items(), key=lambda x: x[1]['importance'])
         maxArm_index = maxArm[0]
         i = 0
         for index,(key,value) in enumerate(self.arm_reward.items()):
-            arm_prob[index] = value
+            arm_prob[index] = value['importance']
         #print("ㅎㅎㅎ",arm_prob,min(arm_prob.values()))
 
         BanditEnv.__init__(self, p_dist=arm_prob, r_dist=np.ones(self.arm_count), info={'optimal_arm': maxArm_index})
