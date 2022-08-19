@@ -41,8 +41,9 @@ class Task():
         for i in remainTask:
             self.generateTime.setdefault(i, generateTime[i])  # Task generate time
             self.deadlineLatency.setdefault(i, deadlineLatency[i])  # micro seconds
-            self.computationWorkload.setdefault(i, computationWorkload[i])  # cpu cycles
-            self.dataSize.setdefault(i, dataSize[i])
+
+            self.computationWorkload.setdefault(i,computationWorkload[i])  # cpu cycles
+            self.dataSize.setdefault(i,dataSize[i])
             self.returnDataSize.append(returnDataSize)
 
             self.bid.setdefault(i, remainBid_D2D1[i])
@@ -54,9 +55,9 @@ class Task():
             self.taskStatus.setdefault(i, remainStatus_D2D1[i])
         for i in deviceId:
             self.generateTime.setdefault(i,systemTime)  # Task generate time
-            self.deadlineLatency.setdefault(i,deadlineLatency[i])  # micro seconds
-            self.computationWorkload.setdefault(i,computationWorkload[i])  # cpu cycles
-            self.dataSize.setdefault(i,dataSize[i])
+            self.deadlineLatency.setdefault(i, random.randint(1,5))  # micro seconds
+            self.computationWorkload.setdefault(i, round(random.uniform(10, 100), 3))  # cpu cycles
+            self.dataSize.setdefault(i, round(random.uniform(10, 100), 3))
             self.returnDataSize.append(returnDataSize)
 
             self.bid.setdefault(i,round(random.uniform(0, 14), 3))

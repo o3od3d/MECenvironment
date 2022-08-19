@@ -23,7 +23,6 @@ class proposed_DTS():
         arm_count = win_ISD.keys()
         maximum = np.zeros(len(win_ISD))
         arm_reward = win_ISD
-        print(win_ISD,arm_count)
         Q, alpha, beta = self.preprocessing(win_ISD)
 
         env = BanditTwoArmedHighLowFixed(arm_reward, arm_count)
@@ -54,8 +53,8 @@ class proposed_DTS():
                 opt_arm = key
                 break
         self.postprocessing(win_ISD,Q,alpha,beta)
-        print("약ㄱ",self.Q,self.count)
-        print(Q)
+        Q,alpha,beta = self.preprocessing(win_ISD)
+
         return Q
 
     def preprocessing(self,win_ISD):

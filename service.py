@@ -42,11 +42,11 @@ class Service():
 
             self.ask.setdefault(i, round(random.uniform(3, 10), 3))
 
-            self.generateTime.append(generateTime)  # Task generate time
-            self.deadlineLatency.append(deadlineLatency)  # micro seconds
-            self.computationWorkload.setdefault(i,computationWorkload[i])  # cpu cycles
-            self.dataSize.setdefault(i,dataSize[i])
-            self.returnDataSize.append(returnDataSize)
+            # self.generateTime.append(generateTime)  # Task generate time
+            # self.deadlineLatency.append(deadlineLatency)  # micro seconds
+            # self.computationWorkload.setdefault(i,round(random.uniform(10,100),3))  # cpu cycles
+            # self.dataSize.setdefault(i,round(random.uniform(10,100),3))
+            # self.returnDataSize.append(returnDataSize)
 
             self.energyExe.append(0)
             self.energyTransfer.append(0)
@@ -56,11 +56,11 @@ class Service():
         for i in remain_ISD:
             self.ask.setdefault(i, remainASK[i])
 
-            self.generateTime.append(generateTime)  # Task generate time
-            self.deadlineLatency.append(deadlineLatency)  # micro seconds
-            self.computationWorkload.setdefault(i, computationWorkload[i])  # cpu cycles
-            self.dataSize.setdefault(i, dataSize[i])
-            self.returnDataSize.append(returnDataSize)
+            # self.generateTime.append(generateTime)  # Task generate time
+            # self.deadlineLatency.append(deadlineLatency)  # micro seconds
+            # self.computationWorkload.setdefault(i, computationWorkload[i])  # cpu cycles
+            # self.dataSize.setdefault(i, dataSize[i])
+            # self.returnDataSize.append(returnDataSize)
 
             self.energyExe.append(0)
             self.energyTransfer.append(0)

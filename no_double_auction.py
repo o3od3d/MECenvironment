@@ -5,9 +5,14 @@ class noDoubleAuction():
     
     # double auction 제약을 만족하지 않고 경매를 진행했을 경우
     def __init__(self):
-        print("Hello double auction")
+        print("Hello no double auction")
 
     def noDoubleAuntion(self, informationOfIRD, informationOfISD):
+        self.k = 1
+        self.p_ird = 0
+        self.p_isd = 0
+        self.win_IRD = dict()
+        self.win_ISD = dict()
 
         ISD_temp_ask, IRD_temp_bid = self.noTruthfulness(informationOfIRD,informationOfISD)
         # ---------------------------------------------------------------------------
@@ -27,7 +32,7 @@ class noDoubleAuction():
         # 2. Searching breakeven index(equilibrium price)
         # ---------------------------------------------------------------------------
         for i in range(double_auction_iter - 1):
-            if sort_IRD[self.ird_index[i]]['False_bid'] >= sort_ISD[self.isd_index[i]]['False_ask']:
+            if sort_IRD[self.ird_index[i]]['bid'] >= sort_ISD[self.isd_index[i]]['ask']:
                 # ---------------------------------------------------------------------------
                 # 3. Double Auction winner set
                 # ---------------------------------------------------------------------------
@@ -37,9 +42,9 @@ class noDoubleAuction():
                 # 4. Remaining IRD in Double Auction
                 # ---------------------------------------------------------------------------
                 remain_IRD.pop(self.ird_index[i])
-                if sort_IRD[self.ird_index[i + 1]]['False_bid'] < sort_ISD[self.isd_index[i + 1]]['False_ask']:
-                    self.p_ird = sort_IRD[self.ird_index[i]]['False_bid']
-                    self.p_isd = sort_ISD[self.isd_index[i]]['False_ask']
+                if sort_IRD[self.ird_index[i + 1]]['bid'] < sort_ISD[self.isd_index[i + 1]]['ask']:
+                    self.p_ird = sort_IRD[self.ird_index[i]]['bid']
+                    self.p_isd = sort_ISD[self.isd_index[i]]['ask']
                     break
             self.k += 1
             
@@ -48,10 +53,10 @@ class noDoubleAuction():
         return self.win_IRD, self.win_ISD, self.p_ird, self.p_isd, self.k, remain_IRD
 
     def notIR(self,ISD,IRD):
-        for index,(key,value) in enumerate(ISD.items()):
+        for (key,value) in list(ISD.items()):
             if self.p_isd - value['True_ask'] < 0:
                 ISD.pop(key)
-        for index,(key,value) in enumerate(IRD.items()):
+        for (key,value) in list(IRD.items()):
             if value['True_bid'] - self.p_ird < 0:
                 IRD.pop(key)
         resultISD = ISD
@@ -64,23 +69,25 @@ class noDoubleAuction():
 
         ISD_temp_ask = dict()
         for index,(key,value) in enumerate(informationOfISD.items()):
-            ISD_temp_ask[key]['True_ask'] = informationOfISD[key]['ask']
+            ISD_temp_ask.setdefault(key,{'True_ask':informationOfISD[key]['ask']})
+            #ISD_temp_ask[key]['True_ask'] = informationOfISD[key]['ask']
             if index % 2 == 0:
                 falseAsk = round(random.uniform((informationOfISD[key]['ask'] + 1), 10), 3)
-                ISD_temp_ask[key]['False_ask'] = falseAsk
+                ISD_temp_ask[key]['ask'] = falseAsk
             else:
                 falseAsk = round(random.uniform(3, (informationOfISD[key]['ask'] - 1)), 3)
-                ISD_temp_ask[key]['False_ask'] = falseAsk
+                ISD_temp_ask[key]['ask'] = falseAsk
 
         IRD_temp_bid = dict()
         for index,(key,value) in enumerate(informationOfIRD.items()):
-            IRD_temp_bid[key]['True_bid'] = informationOfIRD[key]['bid']
+            IRD_temp_bid.setdefault(key,{'True_bid':informationOfIRD[key]['bid']})
+            #IRD_temp_bid[key]['True_bid'] = informationOfIRD[key]['bid']
             if index % 2 == 0:
                 falseBid = round(random.uniform((informationOfIRD[key]['bid'] + 1), 14), 3)
-                IRD_temp_bid[key]['False_bid'] = falseBid
+                IRD_temp_bid[key]['bid'] = falseBid
             else:
                 falseBid = round(random.uniform(0, (informationOfIRD[key]['bid'] - 1)), 3)
-                IRD_temp_bid[key]['False_bid'] = falseBid
+                IRD_temp_bid[key]['bid'] = falseBid
 
         return ISD_temp_ask, IRD_temp_bid
 

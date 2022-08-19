@@ -36,6 +36,7 @@ class IIoTDevice():
         self.roleOfIIoT = []
         self.role_temp = nr.normal(0, 1, size = numberIoT)
         for i in range(numberIoT):
+
             if i == D2Dlink_1_IRD or i == D2Dlink_2_IRD:
 
                 continue
@@ -53,7 +54,7 @@ class IIoTDevice():
             if i == 0:
                 self.IIoTID.append("IBD" + str(1))
                 self.position.append(0)
-            elif i ==1:
+            elif i == 1:
                 self.IIoTID.append("IBD"+str(2))
                 self.position.append(0)
             else:
