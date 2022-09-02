@@ -2,7 +2,7 @@ import math
 import random
 import copy
 import matplotlib.pyplot as plt
-
+import time
 import numpy as np
 import numpy.random as nr
 from sklearn.preprocessing import minmax_scale
@@ -33,6 +33,9 @@ class SimulationEXE():
 		self.TASK_CANCELED = 3
 
 	def main(self):
+		start = time.time()
+		print(start)
+
 		# discount factor
 		print(mp.cpu_count())
 		gamma_PDTS = 0.99
@@ -85,8 +88,8 @@ class SimulationEXE():
 		numberOffailureTask_DUCB = 0
 
 		completeTaskMEC = []
-		self.NumberOfIoT = 80
-		totalRound = 10000
+		self.NumberOfIoT = 100
+		totalRound = 500
 		self.proposed_DTS = proposed_DTS(self.NumberOfIoT,totalRound)
 		self.gaussianTS = gaussianTS(self.NumberOfIoT,totalRound)
 		self.DUCB = DUCB(self.NumberOfIoT,totalRound)
@@ -107,7 +110,7 @@ class SimulationEXE():
 		self.listOfMECServer = []
 		systemTime = 0
 		numberOfTaskFailure = 0
-		subSystemTime = 500
+		subSystemTime = 100
 		numberCreatedTasks = 0
 		numberSuccessTasks = 0
 		numberOfTaskD2D1 = 0
@@ -242,6 +245,7 @@ class SimulationEXE():
 		taskGenerateTimeD2D2_DUCB = dict()
 
 		while systemTime != totalRound:
+			print('time : ',systemTime,'낄낄',time.time() - start)
 			# ---------------------------------------------------------------------------
 			#  1. Initiates simulation
 			# ---------------------------------------------------------------------------
@@ -584,12 +588,14 @@ class SimulationEXE():
 			# D2D 1
 			answerOfwinISD = self.MABanswer(self.win_ISD)
 			if answerOfwinISD == False:
-				print('no winner D2D1')
+				print('no winner D2D1_P')
 				regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + 1
 			else:
 				gamma_PDTS = gamma_PDTS * 0.99
 				opt_ISD = self.proposed_DTS.proposed_DTS(answerOfwinISD,gamma_PDTS)
-
+				print('여기여')
+				print(self.win_ISD)
+				print(opt_ISD)
 				regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + self.regret_analysis(self.win_ISD, opt_ISD)
 				for index, (key, value) in enumerate(answerOfwinISD.items()):
 					answerOfwinISD[key]['mabResult'] = opt_ISD[key]
@@ -605,7 +611,7 @@ class SimulationEXE():
 			# D2D 2
 			answerOfwinISD_D2D2 = self.MABanswer(win_ISD_D2D2)
 			if answerOfwinISD_D2D2 == False:
-				print('no winner D2D2')
+				print('no winner D2D2_P')
 				regretSumOfPDTS_D2D2[systemTime] = regretSumOfPDTS_D2D2[systemTime - 1] + 1
 			else:
 				gamma_PDTS_D2D2 = gamma_PDTS_D2D2 * 0.99
@@ -630,7 +636,7 @@ class SimulationEXE():
 			# D2D 1
 			answerOfwinISD_gaussian = self.MABanswer(self.win_ISD_noDouble)
 			if answerOfwinISD_gaussian == False:
-				print('no winner D2D1')
+				print('no winner D2D1_GA')
 				regretSumOfGauss[systemTime] = regretSumOfGauss[systemTime - 1] + 1
 			else:
 				gamma_gaussian = gamma_gaussian * 0.99
@@ -654,7 +660,7 @@ class SimulationEXE():
 			# D2D 2
 			answerOfwinISD_gaussian_D2D2 = self.MABanswer(win_ISD_noDouble_D2D2)
 			if answerOfwinISD_gaussian_D2D2 == False:
-				print('no winner D2D2')
+				print('no winner D2D2_GA')
 				regretSumOfGauss_D2D2[systemTime] = regretSumOfGauss_D2D2[systemTime - 1] + 1
 			else:
 				gamma_gaussian_D2D2 = gamma_gaussian_D2D2 * 0.99
@@ -689,7 +695,7 @@ class SimulationEXE():
 			# D2D 1
 			answerOfwinISD_DUCB = self.MABanswer(self.win_ISD_noDouble)
 			if answerOfwinISD_DUCB == False:
-				print('no winner D2D1')
+				print('no winner D2D1_DUCB')
 				regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + 1
 			else:
 				gamma_DUCB = gamma_DUCB * 0.99
@@ -717,7 +723,7 @@ class SimulationEXE():
 			# D2D 2
 			answerOfwinISD_DUCB_D2D2 = self.MABanswer(win_ISD_noDouble_D2D2)
 			if answerOfwinISD_DUCB_D2D2 == False:
-				print('no winner D2D2')
+				print('no winner D2D2_DUCB')
 				regretSumOfDUCB_D2D2[systemTime] = regretSumOfDUCB_D2D2[systemTime - 1] + 1
 			else:
 				gamma_DUCB_D2D2 = gamma_DUCB_D2D2 * 0.99

@@ -42,11 +42,23 @@ class doubleAuction():
                 # ---------------------------------------------------------------------------
                 # 4. Remaining IRD in Double Auction
                 # ---------------------------------------------------------------------------
-                remain_IRD.pop(self.ird_index[i])
+
                 if sort_IRD[self.ird_index[i+1]]['bid'] < sort_ISD[self.isd_index[i+1]]['ask']:
-                    self.p_ird = sort_IRD[self.ird_index[i]]['bid']
-                    self.p_isd = sort_ISD[self.isd_index[i]]['ask']
-                    break
+                    # computation p_0
+                    p_0 = 1 / 2 * (sort_IRD[self.ird_index[i + 1]]['bid'] + sort_ISD[self.isd_index[i + 1]]['ask'])
+                    if p_0 >= sort_ISD[self.isd_index[i + 1]]['ask'] and p_0 <= sort_IRD[self.ird_index[i + 1]]['bid']:
+                        self.p_ird = p_0
+                        self.p_isd = p_0
+                        remain_IRD.pop(self.ird_index[i])
+                        break
+                    else:
+                        self.p_ird = sort_IRD[self.ird_index[i]]['bid']
+                        self.p_isd = sort_ISD[self.isd_index[i]]['ask']
+                        self.win_IRD.pop(self.ird_index[i])
+                        self.win_ISD.pop(self.isd_index[i])
+                        self.k = self.k - 1
+                        break
+            remain_IRD.pop(self.ird_index[i])
             self.k += 1
 
 

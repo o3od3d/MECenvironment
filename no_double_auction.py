@@ -1,5 +1,5 @@
 import random
-
+import copy
 
 class noDoubleAuction():
     
@@ -22,7 +22,7 @@ class noDoubleAuction():
         sort_ISD = dict(sorted(ISD_temp_ask.items(), key=lambda x: x[1]['ask']))
         self.ird_index = list(sort_IRD.keys())
         self.isd_index = list(sort_ISD.keys())
-        remain_IRD = sort_IRD.copy()
+        remain_IRD = copy.deepcopy(sort_IRD)
 
         if len(sort_IRD) >= len(sort_ISD):
             double_auction_iter = len(sort_ISD)
@@ -41,12 +41,26 @@ class noDoubleAuction():
                 # ---------------------------------------------------------------------------
                 # 4. Remaining IRD in Double Auction
                 # ---------------------------------------------------------------------------
-                remain_IRD.pop(self.ird_index[i])
+
                 if sort_IRD[self.ird_index[i + 1]]['bid'] < sort_ISD[self.isd_index[i + 1]]['ask']:
-                    self.p_ird = sort_IRD[self.ird_index[i]]['bid']
-                    self.p_isd = sort_ISD[self.isd_index[i]]['ask']
-                    break
+                    # computation p_0
+                    p_0 = 1 / 2 * (sort_IRD[self.ird_index[i + 1]]['bid'] + sort_ISD[self.isd_index[i + 1]]['ask'])
+                    if p_0 >= sort_ISD[self.isd_index[i + 1]]['ask'] and p_0 <= sort_IRD[self.ird_index[i + 1]]['bid']:
+                        self.p_ird = p_0
+                        self.p_isd = p_0
+                        remain_IRD.pop(self.ird_index[i])
+                        break
+                    else:
+                        self.p_ird = sort_IRD[self.ird_index[i]]['bid']
+                        self.p_isd = sort_ISD[self.isd_index[i]]['ask']
+                        self.win_IRD.pop(self.ird_index[i])
+                        self.win_ISD.pop(self.isd_index[i])
+                        self.k = self.k - 1
+                        break
+            remain_IRD.pop(self.ird_index[i])
             self.k += 1
+
+
             
         self.win_ISD, self.win_IRD = self.notIR(self.win_ISD,self.win_IRD)
 
