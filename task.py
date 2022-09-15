@@ -57,7 +57,7 @@ class Task():
             self.generateTime.setdefault(i,systemTime)  # Task generate time
             self.deadlineLatency.setdefault(i, random.randint(1,5))  # micro seconds
             self.computationWorkload.setdefault(i, round(random.uniform(10, 100), 3))  # cpu cycles
-            self.dataSize.setdefault(i, round(random.uniform(10, 100), 3))
+            self.dataSize.setdefault(i, random.randint(600, 1000))
             self.returnDataSize.append(returnDataSize)
 
             self.bid.setdefault(i,round(random.uniform(0, 14), 3))

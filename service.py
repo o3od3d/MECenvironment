@@ -44,7 +44,7 @@ class Service():
 
             # self.generateTime.append(generateTime)  # Task generate time
             # self.deadlineLatency.append(deadlineLatency)  # micro seconds
-            # self.computationWorkload.setdefault(i,round(random.uniform(10,100),3))  # cpu cycles
+            self.computationWorkload.setdefault(i,round(random.uniform(0,1),3))  # cpu cycles
             # self.dataSize.setdefault(i,round(random.uniform(10,100),3))
             # self.returnDataSize.append(returnDataSize)
 
@@ -58,7 +58,7 @@ class Service():
 
             # self.generateTime.append(generateTime)  # Task generate time
             # self.deadlineLatency.append(deadlineLatency)  # micro seconds
-            # self.computationWorkload.setdefault(i, computationWorkload[i])  # cpu cycles
+            self.computationWorkload.setdefault(i, computationWorkload[i])  # cpu cycles
             # self.dataSize.setdefault(i, dataSize[i])
             # self.returnDataSize.append(returnDataSize)
 

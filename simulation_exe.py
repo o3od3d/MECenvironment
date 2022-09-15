@@ -223,6 +223,8 @@ class SimulationEXE():
 		taskGenerateTimeD2D1 = dict()
 		taskGenerateTimeD2D2 = dict()
 		taskGenerateTimeMEC = dict()
+		computationCapD2D1 = dict()
+		computationCapD2D2 = dict()
 
 		# GAUSS
 		remainDeadlined2d1_gauss = dict()
@@ -233,6 +235,8 @@ class SimulationEXE():
 		remainWorkLoadD2D2_gauss = dict()
 		taskGenerateTimeD2D1_gauss = dict()
 		taskGenerateTimeD2D2_gauss = dict()
+		computationCapD2D1_gauss = dict()
+		computationCapD2D2_gauss = dict()
 
 		# DUCB
 		remainDeadlined2d1_DUCB = dict()
@@ -243,6 +247,11 @@ class SimulationEXE():
 		remainWorkLoadD2D2_DUCB = dict()
 		taskGenerateTimeD2D1_DUCB = dict()
 		taskGenerateTimeD2D2_DUCB = dict()
+		computationCapD2D1_DUCB = dict()
+		computationCapD2D2_DUCB = dict()
+
+		power = 0.2
+
 
 		while systemTime != totalRound:
 			print('time : ',systemTime,'낄낄',time.time() - start)
@@ -316,10 +325,10 @@ class SimulationEXE():
 				self.task_D2D2_gauss = copy.deepcopy(self.task_D2D2)
 				self.task_D2D2_DUCB = copy.deepcopy(self.task_D2D2)
 				self.service_D2D1.Service(D2Dlink_1_ISD_already, remainAsk_D2D1, remainStauts_D2D1_ISD,
-										  remainD2Dlink_1_ISD, remainDeadlined2d1, systemTime, remainWorkLoadD2D1,
+										  remainD2Dlink_1_ISD, remainDeadlined2d1, systemTime, computationCapD2D1,
 										  remainDataSizeD2D1, self.task_D2D1.getReturnDataSize())
 				self.service_D2D2.Service(D2Dlink_2_ISD_already, remainAsk_D2D2, remainStauts_D2D2_ISD,
-										  remainD2Dlink_2_ISD, remainDeadlined2d2, systemTime, remainWorkLoadD2D2,
+										  remainD2Dlink_2_ISD, remainDeadlined2d2, systemTime, computationCapD2D2,
 										  remainDataSizeD2D2, self.task_D2D2.getReturnDataSize())
 				self.service_D2D1_gauss = copy.deepcopy(self.service_D2D1)
 				self.service_D2D2_gauss = copy.deepcopy(self.service_D2D2)
@@ -337,6 +346,14 @@ class SimulationEXE():
 				D2Dlink_2_ISD_already_DUCB = copy.deepcopy(D2Dlink_2_ISD_already)
 				D2Dlink_1_already_DUCB = copy.deepcopy(D2Dlink_1_already)
 				D2Dlink_2_already_DUCB = copy.deepcopy(D2Dlink_2_already)
+				answerOfISD = self.MABanswer(D2Dlink_1_ISD_already,self.service_D2D1.getCompLoad())
+				print('정답입니다',answerOfISD)
+				answerOfISD_D2D2 = self.MABanswer(D2Dlink_2_ISD_already,self.service_D2D2.getCompLoad())
+				print('정답입니다', answerOfISD_D2D2)
+				# answerOfISD_gaussian = self.MABanswer()
+				# answerOfISD_gaussian_D2D2 =
+				# answerOfISD_DUCB =
+				# answerOfISD_DUCB_D2D2
 
 			else:
 				# D2D 1
@@ -437,26 +454,26 @@ class SimulationEXE():
 				self.task_D2D2_DUCB.setPolicy(1, D2Dlink_2_IRD_already_DUCB)
 				print("나머지 작업 처리")
 				self.service_D2D1.Service(D2Dlink_1_ISD_already, remainAsk_D2D1, remainStauts_D2D1_ISD,
-										  remainD2Dlink_1_ISD, remainDeadlined2d1, systemTime, remainWorkLoadD2D1,
+										  remainD2Dlink_1_ISD, remainDeadlined2d1, systemTime, computationCapD2D1,
 										  remainDataSizeD2D1, self.task_D2D1.getReturnDataSize())
 				self.service_D2D2.Service(D2Dlink_2_ISD_already, remainAsk_D2D2, remainStauts_D2D2_ISD,
-										  remainD2Dlink_2_ISD, remainDeadlined2d2, systemTime, remainWorkLoadD2D2,
+										  remainD2Dlink_2_ISD, remainDeadlined2d2, systemTime, computationCapD2D2,
 										  remainDataSizeD2D2, self.task_D2D2.getReturnDataSize())
 				self.service_D2D1_gauss.Service(D2Dlink_1_ISD_already_gauss, remainAsk_D2D1_gauss, remainStauts_D2D1_ISD_gauss,
-										  remainD2Dlink_1_ISD_gauss, remainDeadlined2d1_gauss, systemTime, remainWorkLoadD2D1_gauss,
+										  remainD2Dlink_1_ISD_gauss, remainDeadlined2d1_gauss, systemTime, computationCapD2D1_gauss,
 										  remainDataSizeD2D1_gauss, self.task_D2D1_gauss.getReturnDataSize())
 				self.service_D2D2_gauss.Service(D2Dlink_2_ISD_already_gauss, remainAsk_D2D2_gauss, remainStauts_D2D2_ISD_gauss,
-										  remainD2Dlink_2_ISD_gauss, remainDeadlined2d2_gauss, systemTime, remainWorkLoadD2D2_gauss,
+										  remainD2Dlink_2_ISD_gauss, remainDeadlined2d2_gauss, systemTime, computationCapD2D2_gauss,
 										  remainDataSizeD2D2_gauss, self.task_D2D2_gauss.getReturnDataSize())
 				self.service_D2D1_DUCB.Service(D2Dlink_1_ISD_already_DUCB, remainAsk_D2D1_DUCB,
 												remainStauts_D2D1_ISD_DUCB,
 												remainD2Dlink_1_ISD_DUCB, remainDeadlined2d1_DUCB, systemTime,
-												remainWorkLoadD2D1_DUCB,
+												computationCapD2D1_DUCB,
 												remainDataSizeD2D1_DUCB, self.task_D2D1_DUCB.getReturnDataSize())
 				self.service_D2D2_DUCB.Service(D2Dlink_2_ISD_already_DUCB, remainAsk_D2D2_DUCB,
 												remainStauts_D2D2_ISD_DUCB,
 												remainD2Dlink_2_ISD_DUCB, remainDeadlined2d2_DUCB, systemTime,
-												remainWorkLoadD2D2_DUCB,
+												computationCapD2D2_DUCB,
 												remainDataSizeD2D2_DUCB, self.task_D2D2_DUCB.getReturnDataSize())
 			# ---------------------------------------------------------------------------
 			# 2. Tasks are created
@@ -486,6 +503,13 @@ class SimulationEXE():
 			taskGenerateTimeD2D1 = self.task_D2D1.getBaseTime()
 			taskGenerateTimeD2D2 = self.task_D2D2.getBaseTime()
 			taskGenerateTimeMEC = self.task_MEC.getBaseTime()
+
+			computationCapD2D1 = self.service_D2D1.getCompLoad()
+			computationCapD2D2 = self.service_D2D2.getCompLoad()
+			computationCapD2D1_gauss = self.service_D2D1.getCompLoad()
+			computationCapD2D2_gauss = self.service_D2D2.getCompLoad()
+			computationCapD2D1_DUCB = self.service_D2D1.getCompLoad()
+			computationCapD2D2_DUCB = self.service_D2D2.getCompLoad()
 
 			numberOfTaskD2D1 += len(D2Dlink_1_IRD_already)
 			numberOfTaskD2D2 += len(D2Dlink_2_IRD_already)
@@ -586,8 +610,12 @@ class SimulationEXE():
 			# 4. Multi-Armed Bandit is started
 			# ---------------------------------------------------------------------------
 			# D2D 1
-			answerOfwinISD = self.MABanswer(self.win_ISD)
-			if answerOfwinISD == False:
+			#answerOfwinISD = self.MABanswer(self.win_ISD)
+			answerOfwinISD = self.win_ISD
+			for key,value in list(self.win_ISD.items()):
+				answerOfwinISD[key]['importance'] = answerOfISD[key]
+
+			if len(answerOfISD) == 0:
 				print('no winner D2D1_P')
 				regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + 1
 			else:
@@ -609,8 +637,12 @@ class SimulationEXE():
 					numberTasksCanceledAndConcludedD2D1, IIoT, completeTaskD2DIRD, completeTaskD2DISD,
 					remainD2Dlink_1_IRD, D2Dlink_1_IRD_already)
 			# D2D 2
-			answerOfwinISD_D2D2 = self.MABanswer(win_ISD_D2D2)
-			if answerOfwinISD_D2D2 == False:
+			answerOfwinISD_D2D2 = win_ISD_D2D2
+			for key, value in list(win_ISD_D2D2.items()):
+				answerOfwinISD_D2D2[key]['importance'] = answerOfISD_D2D2[key]
+
+			#answerOfwinISD_D2D2 = self.MABanswer(win_ISD_D2D2)
+			if len(answerOfwinISD_D2D2) == 0:
 				print('no winner D2D2_P')
 				regretSumOfPDTS_D2D2[systemTime] = regretSumOfPDTS_D2D2[systemTime - 1] + 1
 			else:
@@ -634,8 +666,12 @@ class SimulationEXE():
 			# 4-1. Multi-Armed Bandit(Gaussian) is started
 			# ---------------------------------------------------------------------------
 			# D2D 1
-			answerOfwinISD_gaussian = self.MABanswer(self.win_ISD_noDouble)
-			if answerOfwinISD_gaussian == False:
+			answerOfwinISD_gaussian = self.win_ISD_noDouble
+			for key, value in list(self.win_ISD_noDouble.items()):
+				answerOfwinISD_gaussian[key]['importance'] = answerOfISD[key]
+
+			#answerOfwinISD_gaussian = self.MABanswer(self.win_ISD_noDouble)
+			if len(answerOfwinISD_gaussian) == 0:
 				print('no winner D2D1_GA')
 				regretSumOfGauss[systemTime] = regretSumOfGauss[systemTime - 1] + 1
 			else:
@@ -658,8 +694,13 @@ class SimulationEXE():
 				numberTasksCanceledAndConcludedD2D1_gauss, IIoT, completeTaskD2DIRD_gauss, completeTaskD2DISD_gauss,
 				remainD2Dlink_1_IRD_gauss, D2Dlink_1_IRD_already_gauss)
 			# D2D 2
-			answerOfwinISD_gaussian_D2D2 = self.MABanswer(win_ISD_noDouble_D2D2)
-			if answerOfwinISD_gaussian_D2D2 == False:
+			answerOfwinISD_gaussian_D2D2 = win_ISD_noDouble_D2D2
+			for key, value in list(win_ISD_noDouble_D2D2.items()):
+				answerOfwinISD_gaussian_D2D2[key]['importance'] = answerOfISD_D2D2[key]
+
+			print('비엇ㄷ나?',answerOfwinISD_gaussian_D2D2)
+			#answerOfwinISD_gaussian_D2D2 = self.MABanswer(win_ISD_noDouble_D2D2)
+			if len(answerOfwinISD_gaussian_D2D2) == 0:
 				print('no winner D2D2_GA')
 				regretSumOfGauss_D2D2[systemTime] = regretSumOfGauss_D2D2[systemTime - 1] + 1
 			else:
@@ -693,8 +734,13 @@ class SimulationEXE():
 			# 4-1. Multi-Armed Bandit(DUCB) is started
 			# ---------------------------------------------------------------------------
 			# D2D 1
-			answerOfwinISD_DUCB = self.MABanswer(self.win_ISD_noDouble)
-			if answerOfwinISD_DUCB == False:
+			answerOfwinISD_DUCB = self.win_ISD_noDouble
+			for key, value in list(self.win_ISD_noDouble.items()):
+				answerOfwinISD_DUCB[key]['importance'] = answerOfISD[key]
+
+
+			#answerOfwinISD_DUCB = self.MABanswer(self.win_ISD_noDouble)
+			if len(answerOfwinISD_DUCB) == 0:
 				print('no winner D2D1_DUCB')
 				regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + 1
 			else:
@@ -721,8 +767,15 @@ class SimulationEXE():
 						completeTaskD2DISD_DUCB,
 						remainD2Dlink_1_IRD_DUCB, D2Dlink_1_IRD_already_DUCB)
 			# D2D 2
-			answerOfwinISD_DUCB_D2D2 = self.MABanswer(win_ISD_noDouble_D2D2)
-			if answerOfwinISD_DUCB_D2D2 == False:
+			answerOfwinISD_DUCB_D2D2 = win_ISD_noDouble_D2D2
+			for key, value in list(win_ISD_noDouble_D2D2.items()):
+				answerOfwinISD_DUCB_D2D2[key]['importance'] = answerOfISD_D2D2[key]
+			print(win_ISD_noDouble_D2D2)
+			print('우ㅏㅣㅁ루아', answerOfwinISD_DUCB_D2D2)
+
+
+			#answerOfwinISD_DUCB_D2D2 = self.MABanswer(win_ISD_noDouble_D2D2)
+			if len(answerOfwinISD_DUCB_D2D2) == 0:
 				print('no winner D2D2_DUCB')
 				regretSumOfDUCB_D2D2[systemTime] = regretSumOfDUCB_D2D2[systemTime - 1] + 1
 			else:
@@ -992,33 +1045,58 @@ class SimulationEXE():
 		print(num,IBD,bid-ask)
 		return IBD, IRD, ISD
 
-	def MABanswer(self,win_ISD):
+	def MABanswer(self,win_ISD,com):
 		if len(win_ISD) == 0:
 			print("no winner")
 		else:
-			ISD_BW = 10 / len(win_ISD)
-			signal = nr.normal(1, 0, len(win_ISD))
-			channelGain = nr.normal(1, 0, len(win_ISD))
-			noise = self.awgn(signal)
+			power = 0.2
+			ISD_BW = 5
+			DR = np.zeros(len(win_ISD))
+			energy = np.zeros(len(win_ISD))
+			#signal = nr.normal(0, 1, len(win_ISD))
+			channelGain = nr.normal(0, 0.05, len(win_ISD))
+			noise = nr.normal(0,0.05,len(win_ISD))
+			#noise = self.awgn(signal)
 			temp_importance = []
-			for index, (key, value) in enumerate(win_ISD.items()):
-				SNR = ((channelGain[index] ** 2) * ISD_BW) / (noise[index] ** 2)
-				win_ISD[key]['importance'] = ISD_BW * np.log2(1 + SNR)
-				temp_importance.append(ISD_BW * np.log2(1 + SNR))
+			# for index, (key, value) in enumerate(win_ISD.items()):
+			# 	SNR = ((channelGain[index] ** 2) * power) / (noise[index] ** 2)
+			# 	DR[index] = ISD_BW * np.log2(1 + SNR)
+			# 	energy[index] = power * (1 / DR[index])
+			# 	reward = com[key] / energy[index]
+			# 	win_ISD[key]['importance'] = reward
+			# 	temp_importance.append(reward)
+			i=0
+			for index in win_ISD:
+				SNR = ((channelGain[i] ** 2) * power) / (noise[i] ** 2)
+				DR[i] = ISD_BW * np.log2(1 + SNR)
+				energy[i] = power / DR[i]
+				reward = com[index] / energy[i]
+				#win_ISD[index]['importance'] = reward
+				temp_importance.append(reward)
+				i += 1
+			importance = self.sigmoid(temp_importance,win_ISD)
+			#temp_importance = minmax_scale(temp_importance)
+			# for i in range(len(temp_importance)):
+			# 	if temp_importance[i] > 1:
+			# 		temp_importance[i] = 1
+			# 	elif temp_importance[i] < 0:
+			# 		temp_importance[i] = 0
+			# 	else:
+			# 		continue
+			# for index,(key,value) in enumerate(win_ISD.items()):
+			# 	win_ISD[key]['importance'] = temp_importance[index]
 
-			temp_importance = minmax_scale(temp_importance)
-			for i in range(len(temp_importance)):
-				if temp_importance[i] > 1:
-					temp_importance[i] = 1
-				elif temp_importance[i] < 0:
-					temp_importance[i] = 0
-				else:
-					continue
-			for index,(key,value) in enumerate(win_ISD.items()):
-				win_ISD[key]['importance'] = temp_importance[index]
-
-			return win_ISD
+			return importance
 		return False
+
+	def sigmoid(self,x,win_ISD):
+		sig = dict()
+		i = 0
+		for key in win_ISD:
+			sig.setdefault(key,1 / (1 + math.exp(-x[i])))
+			i += 1
+				#= [1 / (1 + math.exp(-x[i])) for i in range(len(win_ISD))]
+		return sig
 
 	# regret function
 	def regret_analysis(self,win_ISD, extract_prob):
