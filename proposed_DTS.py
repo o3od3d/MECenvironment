@@ -78,8 +78,8 @@ class proposed_DTS():
             return arm_count[i]
         else:
             T = T * 0.99
-            denom = sum([np.exp(j) for j in count])
-            probs = [np.exp(j) / denom for j in count]
+            denom = sum([np.exp(j / T) for j in count])
+            probs = [np.exp(j/ T) / denom for j in count]
             ucb = {arm:(samples[arm] - probs[arm]) for arm in arm_count}
 
         return max(ucb, key=ucb.get)#np.argmax(ucb)

@@ -16,6 +16,7 @@ from proposed_DTS import proposed_DTS
 from no_double_auction import noDoubleAuction
 from gaussianTS import gaussianTS
 from discountedUCB import DUCB
+from existing_DTS import exe_DTS
 
 
 class SimulationEXE():
@@ -89,9 +90,10 @@ class SimulationEXE():
 
 		completeTaskMEC = []
 		self.NumberOfIoT = 100
-		totalRound = 500
+		totalRound = 5000
 		self.proposed_DTS = proposed_DTS(self.NumberOfIoT,totalRound)
 		self.gaussianTS = gaussianTS(self.NumberOfIoT,totalRound)
+		self.exe_DTS = exe_DTS(self.NumberOfIoT,totalRound)
 		self.DUCB = DUCB(self.NumberOfIoT,totalRound)
 
 		# taskGenerationRate = 0.1 * math.pow(10, 6)
@@ -110,7 +112,7 @@ class SimulationEXE():
 		self.listOfMECServer = []
 		systemTime = 0
 		numberOfTaskFailure = 0
-		subSystemTime = 100
+		subSystemTime = 10
 		numberCreatedTasks = 0
 		numberSuccessTasks = 0
 		numberOfTaskD2D1 = 0
@@ -615,7 +617,7 @@ class SimulationEXE():
 			for key,value in list(self.win_ISD.items()):
 				answerOfwinISD[key]['importance'] = answerOfISD[key]
 
-			if len(answerOfISD) == 0:
+			if len(answerOfwinISD) == 0:
 				print('no winner D2D1_P')
 				regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + 1
 			else:
@@ -666,8 +668,8 @@ class SimulationEXE():
 			# 4-1. Multi-Armed Bandit(Gaussian) is started
 			# ---------------------------------------------------------------------------
 			# D2D 1
-			answerOfwinISD_gaussian = self.win_ISD_noDouble
-			for key, value in list(self.win_ISD_noDouble.items()):
+			answerOfwinISD_gaussian = self.win_ISD #self.win_ISD_noDouble
+			for key, value in list(self.win_ISD.items()):#self.win_ISD_noDouble.items()):
 				answerOfwinISD_gaussian[key]['importance'] = answerOfISD[key]
 
 			#answerOfwinISD_gaussian = self.MABanswer(self.win_ISD_noDouble)
@@ -676,26 +678,27 @@ class SimulationEXE():
 				regretSumOfGauss[systemTime] = regretSumOfGauss[systemTime - 1] + 1
 			else:
 				gamma_gaussian = gamma_gaussian * 0.99
-				opt_ISD_Gauss = self.gaussianTS.gaussianTS(answerOfwinISD_gaussian,gamma_gaussian)
+				opt_ISD_Gauss = self.exe_DTS.main_DTS(answerOfwinISD_gaussian,gamma_gaussian)
 				print('커커',opt_ISD_Gauss)
-				regretSumOfGauss[systemTime] = regretSumOfGauss[systemTime - 1] + self.regret_analysis(self.win_ISD_noDouble,opt_ISD_Gauss)
+				regretSumOfGauss[systemTime] = regretSumOfGauss[systemTime - 1] + self.regret_analysis(self.win_ISD,opt_ISD_Gauss)#self.win_ISD_noDouble,opt_ISD_Gauss)
 				for index, (key, value) in enumerate(answerOfwinISD_gaussian.items()):
 					answerOfwinISD_gaussian[key]['mabResult'] = opt_ISD_Gauss[key]
 				sorting_opt_ISD_Gauss = dict(sorted(answerOfwinISD_gaussian.items(), key=lambda x: x[1]['mabResult'],reverse=True))
 
-				matchList_gauss = self.matchingIRDISD(win_IRD_noDouble, sorting_opt_ISD_Gauss, self.task_D2D1_gauss, IIoT)
+				matchList_gauss = self.matchingIRDISD(win_IRD,sorting_opt_ISD_Gauss, self.task_D2D1_gauss, IIoT)#win_IRD_noDouble, sorting_opt_ISD_Gauss, self.task_D2D1_gauss, IIoT)
 
 				utilityOfIBD_D2D1_gauss[systemTime], utilityOfIRD_D2D1_gauss[systemTime], utilityOfISD_D2D1_gauss[
-				systemTime] = self.utilityComputation(len(matchList_gauss), bid_price_noDouble, ask_price_noDouble,
-													  self.win_ISD_noDouble, win_IRD_noDouble)
+				systemTime] = self.utilityComputation(len(matchList_gauss), bid_price, ask_price, self.win_ISD, win_IRD)
+													  #bid_price_noDouble, ask_price_noDouble,
+													  #self.win_ISD_noDouble, win_IRD_noDouble)
 
 				numberOffailureTask_gauss, numberTasksCanceledAndConcludedD2D1_gauss, completeTaskD2DIRD_gauss, completeTaskD2DISD_gauss, temp_D2D1Offloading_gauss = self.D2DOffloading(
 				matchList_gauss, self.task_D2D1_gauss, systemTime, numberOffailureTask_gauss,
 				numberTasksCanceledAndConcludedD2D1_gauss, IIoT, completeTaskD2DIRD_gauss, completeTaskD2DISD_gauss,
 				remainD2Dlink_1_IRD_gauss, D2Dlink_1_IRD_already_gauss)
 			# D2D 2
-			answerOfwinISD_gaussian_D2D2 = win_ISD_noDouble_D2D2
-			for key, value in list(win_ISD_noDouble_D2D2.items()):
+			answerOfwinISD_gaussian_D2D2 = win_ISD_D2D2#win_ISD_noDouble_D2D2
+			for key, value in list(win_ISD_D2D2.items()):#win_ISD_noDouble_D2D2.items()):
 				answerOfwinISD_gaussian_D2D2[key]['importance'] = answerOfISD_D2D2[key]
 
 			print('비엇ㄷ나?',answerOfwinISD_gaussian_D2D2)
@@ -705,23 +708,23 @@ class SimulationEXE():
 				regretSumOfGauss_D2D2[systemTime] = regretSumOfGauss_D2D2[systemTime - 1] + 1
 			else:
 				gamma_gaussian_D2D2 = gamma_gaussian_D2D2 * 0.99
-				opt_ISD_Gauss_D2D2 = self.gaussianTS.gaussianTS(answerOfwinISD_gaussian_D2D2, gamma_gaussian_D2D2)
+				opt_ISD_Gauss_D2D2 = self.exe_DTS.main_DTS(answerOfwinISD_gaussian_D2D2, gamma_gaussian_D2D2)
 				print('커커',opt_ISD_Gauss_D2D2)
 
-				regretSumOfGauss_D2D2[systemTime] = regretSumOfGauss_D2D2[systemTime - 1] + self.regret_analysis(
-					win_ISD_noDouble_D2D2, opt_ISD_Gauss_D2D2)
+				regretSumOfGauss_D2D2[systemTime] = regretSumOfGauss_D2D2[systemTime - 1] + self.regret_analysis(win_ISD_D2D2,opt_ISD_Gauss_D2D2)
+					#win_ISD_noDouble_D2D2, opt_ISD_Gauss_D2D2)
 
 				for index, (key, value) in enumerate(answerOfwinISD_gaussian_D2D2.items()):
 					answerOfwinISD_gaussian_D2D2[key]['mabResult'] = opt_ISD_Gauss_D2D2[key]
 				sorting_opt_ISD_Gauss_D2D2 = dict(
 					sorted(answerOfwinISD_gaussian_D2D2.items(), key=lambda x: x[1]['mabResult'], reverse=True))
 
-				matchList_gauss_D2D2 = self.matchingIRDISD(win_IRD_noDouble_D2D2, sorting_opt_ISD_Gauss_D2D2, self.task_D2D2_gauss,
-													  IIoT)
+				matchList_gauss_D2D2 = self.matchingIRDISD(win_IRD_D2D2, sorting_opt_ISD_Gauss_D2D2, self.task_D2D2_gauss,
+													  IIoT)#win_IRD_noDouble_D2D2, sorting_opt_ISD_Gauss_D2D2, self.task_D2D2_gauss,IIoT)
 
 				utilityOfIBD_D2D2_gauss[systemTime], utilityOfIRD_D2D2_gauss[systemTime], utilityOfISD_D2D2_gauss[
-					systemTime] = self.utilityComputation(len(matchList_gauss_D2D2), bid_price_noDouble_D2D2, ask_price_noDouble_D2D2,
-														  win_ISD_noDouble_D2D2, win_IRD_noDouble_D2D2)
+					systemTime] = self.utilityComputation(len(matchList_gauss_D2D2), bid_price_D2D2,ask_price_D2D2,win_ISD_D2D2,win_IRD_D2D2)#bid_price_noDouble_D2D2, ask_price_noDouble_D2D2,
+														  #win_ISD_noDouble_D2D2, win_IRD_noDouble_D2D2)
 
 				numberOffailureTask_gauss, numberTasksCanceledAndConcludedD2D2_gauss, completeTaskD2D2IRD_gauss, completeTaskD2D2ISD_gauss, temp_D2D2Offloading_gauss = self.D2DOffloading(
 					matchList_gauss_D2D2, self.task_D2D2_gauss, systemTime, numberOffailureTask_gauss,
@@ -922,13 +925,40 @@ class SimulationEXE():
 
 	def regretGraphGeneration(self,regretSumOfPDTS,regretSumOfPDTS_D2D2,regretSumOfGauss,regretSumOfGauss_D2D2,regretSumOfDUCB,regretSumOfDUCB_D2D2,totalRound):
 		Y1 = regretSumOfPDTS + regretSumOfPDTS_D2D2
+		# result1 = sum(regretSumOfPDTS) / len(regretSumOfPDTS)
+		# result2 = sum(regretSumOfPDTS_D2D2) / len(regretSumOfPDTS_D2D2)
+		# total_result = (result1 + result2) / 2
+		# avg_result = np.zeros(len(regretSumOfPDTS))
+		#
+		# for i in range(len(regretSumOfPDTS)):
+		# 	temp_avg = (regretSumOfPDTS[i] + regretSumOfPDTS_D2D2[i]) / 2
+		# 	avg_result[i] = temp_avg / total_result
+		# result11 = sum(regretSumOfGauss) / len(regretSumOfGauss)
+		# result22 = sum(regretSumOfGauss_D2D2) / len(regretSumOfGauss_D2D2)
+		# total_result1 = (result11 + result22) / 2
+		# avg_result1 = np.zeros(len(regretSumOfGauss))
+		#
+		# for i in range(len(regretSumOfGauss)):
+		# 	temp_avg = (regretSumOfGauss[i] + regretSumOfGauss_D2D2[i]) / 2
+		# 	avg_result1[i] = temp_avg / total_result1
+		# temp = [(regretSumOfPDTS[i] + regretSumOfPDTS_D2D2[i]) / 2 for i in range(len(regretSumOfPDTS))]
+		# temp2 = [(regretSumOfGauss[i] + regretSumOfGauss_D2D2[i])/2 for i in range(len(regretSumOfGauss))]
+		# Y1 =np.zeros(len(temp))
+		# for i in range(len(temp)):
+		# 	temp_num = temp[i]
+		# 	Y1[i] = 1 / (1 + math.exp(-temp_num))
+		# Y2 = np.zeros(len(temp2))
+		# for i in range(len(temp2)):
+		# 	temp_num = temp2[i]
+		# 	Y2[i] = 1 / (1 + math.exp(-temp_num))
 		Y2 = regretSumOfGauss + regretSumOfGauss_D2D2
-		Y3 = regretSumOfDUCB + regretSumOfDUCB_D2D2
+		#Y3 = regretSumOfDUCB + regretSumOfDUCB_D2D2
+
 		plt.grid()
 		plt.plot(range(totalRound), Y1)
 		plt.plot(range(totalRound), Y2)
-		plt.plot(range(totalRound), Y3)
-		plt.legend(['Proposed', 'Gaussian', 'DUCB'])
+		#plt.plot(range(totalRound), Y3)
+		plt.legend(['Proposed', 'Gaussian'])
 		plt.title('Regret')
 		plt.xlabel('Iterations')
 		plt.ylabel('accumulate regret')
