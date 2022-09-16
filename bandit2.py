@@ -24,9 +24,9 @@ class BanditEnv(gym.Env):
     def __init__(self, p_dist, r_dist, info={}):
         if len(p_dist) != len(r_dist):
             raise ValueError("Probability and Reward distribution must be the same length")
-
-        if min(p_dist) < 0 or max(p_dist) > 1:
-            raise ValueError("All probabilities must be between 0 and 1")
+        #
+        # if min(p_dist) < 0 or max(p_dist) > 1:
+        #     raise ValueError("All probabilities must be between 0 and 1")
 
         for reward in r_dist:
             if isinstance(reward, list) and reward[1] <= 0:
@@ -66,16 +66,25 @@ class BanditEnv(gym.Env):
 class BanditTwoArmedHighLowFixed(BanditEnv):
     """Stochastic version with a large difference between which bandit pays out of two choices"""
 
-    def __init__(self,arm_reward,arm_count):
+    def __init__(self,arm_reward,arm_count,rewardType):
         self.arm_reward = arm_reward
         self.arm_count = len(arm_count)
         arm_prob = np.zeros(self.arm_count)#{i: 0 for i in arm_count}
         maxArm = max(self.arm_reward.items(), key=lambda x: x[1]['importance'])
         maxArm_index = maxArm[0]
         i = 0
-        for index,(key,value) in enumerate(self.arm_reward.items()):
-            arm_prob[index] = value['importance']
+
         #print("ㅎㅎㅎ",arm_prob,min(arm_prob.values()))
+        r = np.ones(self.arm_count)
+        if rewardType == 0:
+            r = np.ones(self.arm_count)
+            for index, (key, value) in enumerate(self.arm_reward.items()):
+                arm_prob[index] = value['importance']
+        else:
+            for index, (key,value) in enumerate(self.arm_reward.items()):
+                r[index] = value['reward']
+                arm_prob[index] = value['importance']
+
 
         BanditEnv.__init__(self, p_dist=arm_prob, r_dist=np.ones(self.arm_count), info={'optimal_arm': maxArm_index})
 

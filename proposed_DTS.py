@@ -25,7 +25,7 @@ class proposed_DTS():
         arm_reward = win_ISD
         Q, alpha, beta = self.preprocessing(win_ISD)
 
-        env = BanditTwoArmedHighLowFixed(arm_reward, arm_count)
+        env = BanditTwoArmedHighLowFixed(arm_reward, arm_count,0)
 
         #gamma = gamma * 0.99
         for i in range(self.total_rounds):

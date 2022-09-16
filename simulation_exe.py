@@ -15,7 +15,8 @@ from proposed_double_auction import doubleAuction
 from proposed_DTS import proposed_DTS
 from no_double_auction import noDoubleAuction
 from gaussianTS import gaussianTS
-from discountedUCB import DUCB
+#from discountedUCB import DUCB
+from UCB import DUCB
 from existing_DTS import exe_DTS
 
 
@@ -252,6 +253,8 @@ class SimulationEXE():
 		computationCapD2D1_DUCB = dict()
 		computationCapD2D2_DUCB = dict()
 
+		tempReward = {i: 0 for i in range(self.NumberOfIoT)}
+		tempReward2 = {i: 0 for i in range(self.NumberOfIoT)}
 		power = 0.2
 
 
@@ -348,10 +351,11 @@ class SimulationEXE():
 				D2Dlink_2_ISD_already_DUCB = copy.deepcopy(D2Dlink_2_ISD_already)
 				D2Dlink_1_already_DUCB = copy.deepcopy(D2Dlink_1_already)
 				D2Dlink_2_already_DUCB = copy.deepcopy(D2Dlink_2_already)
-				answerOfISD = self.MABanswer(D2Dlink_1_ISD_already,self.service_D2D1.getCompLoad())
+				answerOfISD,DR,energy,tempReward,presentReward = self.MABanswer(D2Dlink_1_ISD_already,self.service_D2D1.getCompLoad(),tempReward)
 				print('정답입니다',answerOfISD)
-				answerOfISD_D2D2 = self.MABanswer(D2Dlink_2_ISD_already,self.service_D2D2.getCompLoad())
+				answerOfISD_D2D2,DR2,energy2,tempReward2,presentReward2 = self.MABanswer(D2Dlink_2_ISD_already,self.service_D2D2.getCompLoad(),tempReward2)
 				print('정답입니다', answerOfISD_D2D2)
+
 				# answerOfISD_gaussian = self.MABanswer()
 				# answerOfISD_gaussian_D2D2 =
 				# answerOfISD_DUCB =
@@ -739,8 +743,8 @@ class SimulationEXE():
 			# D2D 1
 			answerOfwinISD_DUCB = self.win_ISD_noDouble
 			for key, value in list(self.win_ISD_noDouble.items()):
-				answerOfwinISD_DUCB[key]['importance'] = answerOfISD[key]
-
+				answerOfwinISD_DUCB[key]['importance'] = presentReward[key]
+				answerOfwinISD_DUCB[key]['reward'] = tempReward[key]
 
 			#answerOfwinISD_DUCB = self.MABanswer(self.win_ISD_noDouble)
 			if len(answerOfwinISD_DUCB) == 0:
@@ -748,7 +752,7 @@ class SimulationEXE():
 				regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + 1
 			else:
 				gamma_DUCB = gamma_DUCB * 0.99
-				opt_ISD_DUCB = self.DUCB.discounted_UCB(answerOfwinISD_DUCB, gamma_DUCB)
+				opt_ISD_DUCB = self.DUCB.discounted_UCB(answerOfwinISD_DUCB, gamma_DUCB,systemTime,subSystemTime)
 				print('커커', opt_ISD_DUCB)
 				regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + self.regret_analysis(
 					self.win_ISD_noDouble, opt_ISD_DUCB)
@@ -772,7 +776,8 @@ class SimulationEXE():
 			# D2D 2
 			answerOfwinISD_DUCB_D2D2 = win_ISD_noDouble_D2D2
 			for key, value in list(win_ISD_noDouble_D2D2.items()):
-				answerOfwinISD_DUCB_D2D2[key]['importance'] = answerOfISD_D2D2[key]
+				answerOfwinISD_DUCB_D2D2[key]['importance'] = presentReward2[key]
+				answerOfwinISD_DUCB_D2D2[key]['reward'] = tempReward2[key]
 			print(win_ISD_noDouble_D2D2)
 			print('우ㅏㅣㅁ루아', answerOfwinISD_DUCB_D2D2)
 
@@ -783,7 +788,7 @@ class SimulationEXE():
 				regretSumOfDUCB_D2D2[systemTime] = regretSumOfDUCB_D2D2[systemTime - 1] + 1
 			else:
 				gamma_DUCB_D2D2 = gamma_DUCB_D2D2 * 0.99
-				opt_ISD_DUCB_D2D2 = self.DUCB.discounted_UCB(answerOfwinISD_DUCB_D2D2, gamma_DUCB_D2D2)
+				opt_ISD_DUCB_D2D2 = self.DUCB.discounted_UCB(answerOfwinISD_DUCB_D2D2, gamma_DUCB_D2D2,systemTime,subSystemTime)
 				print('커커', opt_ISD_DUCB_D2D2)
 
 				regretSumOfDUCB_D2D2[systemTime] = regretSumOfDUCB_D2D2[systemTime - 1] + self.regret_analysis(
@@ -1075,7 +1080,19 @@ class SimulationEXE():
 		print(num,IBD,bid-ask)
 		return IBD, IRD, ISD
 
-	def MABanswer(self,win_ISD,com):
+	# def UCBanswer(self,win_ISD,DR,energy,com,systemTime):
+	# 	tempReward = dict()
+	# 	if systemTime == 0:
+	# 		for i in win_ISD:
+	# 			tempReward.setdefault(i,0)
+	# 	else:
+	# 		for i in win_ISD:
+	# 			reward = 0.5 * ((1/DR[i]) + (1/com[i])) + 0.5 * energy[i]
+	# 			tempReward.setdefault(i,reward)
+	# 	return tempReward
+
+
+	def MABanswer(self,win_ISD,com,preReward):
 		if len(win_ISD) == 0:
 			print("no winner")
 		else:
@@ -1115,8 +1132,23 @@ class SimulationEXE():
 			# 		continue
 			# for index,(key,value) in enumerate(win_ISD.items()):
 			# 	win_ISD[key]['importance'] = temp_importance[index]
+			# tempReward = dict()
+			# presentReward = dict()
+			# j = 0
+			# for index2 in range(self.NumberOfIoT):
+			# 	if win_ISD[j] == index2:
+			#
+			# 	for index in win_ISD:
+			# 		print('리워드',index)
+			# 		print(preReward)
+			# 		print(tempReward)
+			# 		tempReward.setdefault(index, preReward[index])
+			# 		reward = 0.5 * ((1 / DR[j]) + (1 / com[index])) + 0.5 * energy[j]
+			# 		presentReward.setdefault(index,reward)
+			# 		j += 1
 
-			return importance
+
+			return importance,DR,energy,tempReward,presentReward
 		return False
 
 	def sigmoid(self,x,win_ISD):
