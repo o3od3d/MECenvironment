@@ -20,7 +20,7 @@ class DUCB():
 
         arm_count = win_ISD.keys()
         arm_reward = win_ISD
-
+        print('UCB의 REWARD',win_ISD)
         C = self.preprocessing(win_ISD)
         env = BanditTwoArmedHighLowFixed(arm_reward, arm_count,1)
         tempTime = 0
@@ -42,7 +42,7 @@ class DUCB():
                     next_state, reward, done, info = env.step(j)
                     break
                 j += 1
-
+            print(systemTime,':',reward,'워ㅜ에ㅔ에')
             self.count[arm] += 1
             self.sum_rewards[arm] += reward
             self.Q[arm] = self.sum_rewards[arm] / self.count[arm]
@@ -56,6 +56,8 @@ class DUCB():
             #     x[key] = temp_x[index]
             # arm_t = arm
             self.postprocessing(win_ISD,C)
+            print('정답',C)
+            print(self.Q)
             C = self.preprocessing(win_ISD)
         # opt_arm = np.argmax(x)
         # for index, (key, elem) in enumerate(win_ISD.items()):

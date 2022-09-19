@@ -113,7 +113,7 @@ class SimulationEXE():
 		self.listOfMECServer = []
 		systemTime = 0
 		numberOfTaskFailure = 0
-		subSystemTime = 10
+		self.subSystemTime = 10
 		numberCreatedTasks = 0
 		numberSuccessTasks = 0
 		numberOfTaskD2D1 = 0
@@ -255,7 +255,9 @@ class SimulationEXE():
 
 		tempReward = {i: 0 for i in range(self.NumberOfIoT)}
 		tempReward2 = {i: 0 for i in range(self.NumberOfIoT)}
-		power = 0.2
+		presentReward = {i: 0 for i in range(self.NumberOfIoT)}
+		presentReward2 = {i: 0 for i in range(self.NumberOfIoT)}
+		selectCount = {i: 0 for i in range(self.NumberOfIoT)}
 
 
 		while systemTime != totalRound:
@@ -263,8 +265,8 @@ class SimulationEXE():
 			# ---------------------------------------------------------------------------
 			#  1. Initiates simulation
 			# ---------------------------------------------------------------------------
-			if systemTime == 0 or systemTime % subSystemTime == 0:
-				if systemTime % subSystemTime == 0:
+			if systemTime == 0 or systemTime % self.subSystemTime == 0:
+				if systemTime % self.subSystemTime == 0:
 					remainD2Dlink_1_IRD_DUCB = list(set(self.D2Dlink_1_IRD) - set(completeTaskD2DIRD_DUCB))
 					remainD2Dlink_2_IRD_DUCB = list(set(self.D2Dlink_2_IRD) - set(completeTaskD2D2IRD_DUCB))
 					remainD2Dlink_1_IRD_gauss = list(set(self.D2Dlink_1_IRD) - set(completeTaskD2DIRD_gauss))
@@ -351,10 +353,14 @@ class SimulationEXE():
 				D2Dlink_2_ISD_already_DUCB = copy.deepcopy(D2Dlink_2_ISD_already)
 				D2Dlink_1_already_DUCB = copy.deepcopy(D2Dlink_1_already)
 				D2Dlink_2_already_DUCB = copy.deepcopy(D2Dlink_2_already)
-				answerOfISD,DR,energy,tempReward,presentReward = self.MABanswer(D2Dlink_1_ISD_already,self.service_D2D1.getCompLoad(),tempReward)
+				answerOfISD,DR,energy,tempReward,presentReward = self.MABanswer(D2Dlink_1_ISD_already,self.service_D2D1.getCompLoad(),presentReward,selectCount)
 				print('정답입니다',answerOfISD)
-				answerOfISD_D2D2,DR2,energy2,tempReward2,presentReward2 = self.MABanswer(D2Dlink_2_ISD_already,self.service_D2D2.getCompLoad(),tempReward2)
+				print(selectCount)
+				print(D2Dlink_1_ISD_already)
+				answerOfISD_D2D2,DR2,energy2,tempReward2,presentReward2 = self.MABanswer(D2Dlink_2_ISD_already,self.service_D2D2.getCompLoad(),presentReward2,selectCount)
 				print('정답입니다', answerOfISD_D2D2)
+				print(selectCount)
+				print(D2Dlink_2_ISD_already)
 
 				# answerOfISD_gaussian = self.MABanswer()
 				# answerOfISD_gaussian_D2D2 =
@@ -630,7 +636,7 @@ class SimulationEXE():
 				print('여기여')
 				print(self.win_ISD)
 				print(opt_ISD)
-				regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + self.regret_analysis(self.win_ISD, opt_ISD)
+				regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + self.regret_analysis(self.win_ISD, opt_ISD,0)
 				for index, (key, value) in enumerate(answerOfwinISD.items()):
 					answerOfwinISD[key]['mabResult'] = opt_ISD[key]
 
@@ -655,7 +661,7 @@ class SimulationEXE():
 				gamma_PDTS_D2D2 = gamma_PDTS_D2D2 * 0.99
 				opt_ISD_D2D2 = self.proposed_DTS.proposed_DTS(answerOfwinISD_D2D2, gamma_PDTS_D2D2)
 
-				regretSumOfPDTS_D2D2[systemTime] = regretSumOfPDTS_D2D2[systemTime - 1] + self.regret_analysis(win_ISD_D2D2, opt_ISD_D2D2)
+				regretSumOfPDTS_D2D2[systemTime] = regretSumOfPDTS_D2D2[systemTime - 1] + self.regret_analysis(win_ISD_D2D2, opt_ISD_D2D2,0)
 				for index, (key, value) in enumerate(answerOfwinISD_D2D2.items()):
 					answerOfwinISD_D2D2[key]['mabResult'] = opt_ISD_D2D2[key]
 
@@ -684,7 +690,7 @@ class SimulationEXE():
 				gamma_gaussian = gamma_gaussian * 0.99
 				opt_ISD_Gauss = self.exe_DTS.main_DTS(answerOfwinISD_gaussian,gamma_gaussian)
 				print('커커',opt_ISD_Gauss)
-				regretSumOfGauss[systemTime] = regretSumOfGauss[systemTime - 1] + self.regret_analysis(self.win_ISD,opt_ISD_Gauss)#self.win_ISD_noDouble,opt_ISD_Gauss)
+				regretSumOfGauss[systemTime] = regretSumOfGauss[systemTime - 1] + self.regret_analysis(self.win_ISD,opt_ISD_Gauss,0)#self.win_ISD_noDouble,opt_ISD_Gauss)
 				for index, (key, value) in enumerate(answerOfwinISD_gaussian.items()):
 					answerOfwinISD_gaussian[key]['mabResult'] = opt_ISD_Gauss[key]
 				sorting_opt_ISD_Gauss = dict(sorted(answerOfwinISD_gaussian.items(), key=lambda x: x[1]['mabResult'],reverse=True))
@@ -715,7 +721,7 @@ class SimulationEXE():
 				opt_ISD_Gauss_D2D2 = self.exe_DTS.main_DTS(answerOfwinISD_gaussian_D2D2, gamma_gaussian_D2D2)
 				print('커커',opt_ISD_Gauss_D2D2)
 
-				regretSumOfGauss_D2D2[systemTime] = regretSumOfGauss_D2D2[systemTime - 1] + self.regret_analysis(win_ISD_D2D2,opt_ISD_Gauss_D2D2)
+				regretSumOfGauss_D2D2[systemTime] = regretSumOfGauss_D2D2[systemTime - 1] + self.regret_analysis(win_ISD_D2D2,opt_ISD_Gauss_D2D2,0)
 					#win_ISD_noDouble_D2D2, opt_ISD_Gauss_D2D2)
 
 				for index, (key, value) in enumerate(answerOfwinISD_gaussian_D2D2.items()):
@@ -752,10 +758,10 @@ class SimulationEXE():
 				regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + 1
 			else:
 				gamma_DUCB = gamma_DUCB * 0.99
-				opt_ISD_DUCB = self.DUCB.discounted_UCB(answerOfwinISD_DUCB, gamma_DUCB,systemTime,subSystemTime)
+				opt_ISD_DUCB = self.DUCB.discounted_UCB(answerOfwinISD_DUCB, gamma_DUCB,systemTime,self.subSystemTime)
 				print('커커', opt_ISD_DUCB)
 				regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + self.regret_analysis(
-					self.win_ISD_noDouble, opt_ISD_DUCB)
+					self.win_ISD_noDouble, opt_ISD_DUCB,1)
 				for index, (key, value) in enumerate(answerOfwinISD_DUCB.items()):
 					answerOfwinISD_DUCB[key]['mabResult'] = opt_ISD_DUCB[key]
 				sorting_opt_ISD_DUCB = dict(
@@ -788,11 +794,11 @@ class SimulationEXE():
 				regretSumOfDUCB_D2D2[systemTime] = regretSumOfDUCB_D2D2[systemTime - 1] + 1
 			else:
 				gamma_DUCB_D2D2 = gamma_DUCB_D2D2 * 0.99
-				opt_ISD_DUCB_D2D2 = self.DUCB.discounted_UCB(answerOfwinISD_DUCB_D2D2, gamma_DUCB_D2D2,systemTime,subSystemTime)
+				opt_ISD_DUCB_D2D2 = self.DUCB.discounted_UCB(answerOfwinISD_DUCB_D2D2, gamma_DUCB_D2D2,systemTime,self.subSystemTime)
 				print('커커', opt_ISD_DUCB_D2D2)
 
 				regretSumOfDUCB_D2D2[systemTime] = regretSumOfDUCB_D2D2[systemTime - 1] + self.regret_analysis(
-					win_ISD_noDouble_D2D2, opt_ISD_DUCB_D2D2)
+					win_ISD_noDouble_D2D2, opt_ISD_DUCB_D2D2,1)
 
 				for index, (key, value) in enumerate(answerOfwinISD_DUCB_D2D2.items()):
 					answerOfwinISD_DUCB_D2D2[key]['mabResult'] = opt_ISD_DUCB_D2D2[key]
@@ -957,12 +963,12 @@ class SimulationEXE():
 		# 	temp_num = temp2[i]
 		# 	Y2[i] = 1 / (1 + math.exp(-temp_num))
 		Y2 = regretSumOfGauss + regretSumOfGauss_D2D2
-		#Y3 = regretSumOfDUCB + regretSumOfDUCB_D2D2
+		Y3 = regretSumOfDUCB + regretSumOfDUCB_D2D2
 
 		plt.grid()
-		plt.plot(range(totalRound), Y1)
-		plt.plot(range(totalRound), Y2)
-		#plt.plot(range(totalRound), Y3)
+		plt.plot(range(totalRound), Y1,marker='.',markevery=1000)
+		plt.plot(range(totalRound), Y2,marker='*',markevery=1000)
+		plt.plot(range(totalRound), Y3,marker='D',markevery=1000)
 		plt.legend(['Proposed', 'Gaussian'])
 		plt.title('Regret')
 		plt.xlabel('Iterations')
@@ -1092,7 +1098,7 @@ class SimulationEXE():
 	# 	return tempReward
 
 
-	def MABanswer(self,win_ISD,com,preReward):
+	def MABanswer(self,win_ISD,com,preReward,selectCount):
 		if len(win_ISD) == 0:
 			print("no winner")
 		else:
@@ -1132,23 +1138,35 @@ class SimulationEXE():
 			# 		continue
 			# for index,(key,value) in enumerate(win_ISD.items()):
 			# 	win_ISD[key]['importance'] = temp_importance[index]
-			# tempReward = dict()
-			# presentReward = dict()
-			# j = 0
-			# for index2 in range(self.NumberOfIoT):
-			# 	if win_ISD[j] == index2:
-			#
-			# 	for index in win_ISD:
-			# 		print('리워드',index)
-			# 		print(preReward)
-			# 		print(tempReward)
-			# 		tempReward.setdefault(index, preReward[index])
-			# 		reward = 0.5 * ((1 / DR[j]) + (1 / com[index])) + 0.5 * energy[j]
-			# 		presentReward.setdefault(index,reward)
-			# 		j += 1
+
+			#presentReward = dict()
+			j = 0
+
+			tempReward = copy.deepcopy(preReward)
+			for index in win_ISD:
+				print('리워드',index)
+				print(preReward)
+				print(tempReward)
+				selectCount[index] += 1
+
+				if com[index] == 0:
+					reward = 0
+					if selectCount[index] != 1 and preReward[index] != 0:
+						reward = ((preReward[index] * (selectCount[index] - 1)) + reward) / selectCount[index]
+						#reward = 1 / (1 + math.exp(-reward))
+					preReward = reward
+				else:
+					reward = 0.5 * ((1 / DR[j]) + (1 / com[index])) + 0.5 * energy[j]
+					if selectCount[index] != 0:
+						print('으라야',preReward[index],selectCount[index],reward)
+						reward = ((preReward[index] * (selectCount[index] - 1)) + reward) / selectCount[index]
+					#reward = 1 / (1 + math.exp(-reward))
+					preReward[index] = reward
+				j += 1
 
 
-			return importance,DR,energy,tempReward,presentReward
+
+			return importance,DR,energy,tempReward,preReward
 		return False
 
 	def sigmoid(self,x,win_ISD):
@@ -1161,15 +1179,34 @@ class SimulationEXE():
 		return sig
 
 	# regret function
-	def regret_analysis(self,win_ISD, extract_prob):
-		maxArm = max(win_ISD.items(), key=lambda x: x[1]['importance'])
+	def regret_analysis(self,win_ISD, extract_prob,type):
+		if type == 0:
+			maxArm = max(win_ISD.items(), key=lambda x: x[1]['importance'])
 
-		maxArm_value = maxArm[1]['importance']
-		print('먐', maxArm_value)
-		extract_maxArm = max(extract_prob.values())
-		print(extract_maxArm)
-		regretSum = abs(maxArm_value - extract_maxArm)
-		print('regret',regretSum)
+			maxArm_value = maxArm[1]['importance']
+
+			print('먐', maxArm_value)
+			extract_maxArm = max(extract_prob.values())
+
+
+			print(extract_maxArm)
+			regretSum = abs(maxArm_value - extract_maxArm)
+			print('regret',regretSum)
+		else:
+			print(win_ISD)
+			print(extract_prob)
+			maxArm = min(win_ISD.items(), key=lambda x: x[1]['importance'])
+
+			maxArm_value = maxArm[1]['importance']
+			print(maxArm_value)
+			maxArm_value = 1 / (1 + math.exp(-maxArm_value))
+			print('먐2', maxArm_value)
+			extract_maxArm = min(extract_prob.values())
+			print(extract_maxArm)
+			extract_maxArm = 1 / (1 + math.exp(-extract_maxArm))
+			print(extract_maxArm)
+			regretSum = abs(maxArm_value - extract_maxArm)
+			print('regret2', regretSum)
 		return regretSum
 
 	# Addictive White Gaussian Noise function

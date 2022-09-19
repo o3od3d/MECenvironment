@@ -84,8 +84,10 @@ class BanditTwoArmedHighLowFixed(BanditEnv):
             for index, (key,value) in enumerate(self.arm_reward.items()):
                 r[index] = value['reward']
                 arm_prob[index] = value['importance']
+            print('MAB ㄹㅇㄷ',r)
+            print('MAB PROB',arm_prob)
 
 
-        BanditEnv.__init__(self, p_dist=arm_prob, r_dist=np.ones(self.arm_count), info={'optimal_arm': maxArm_index})
+        BanditEnv.__init__(self, p_dist=arm_prob, r_dist=r, info={'optimal_arm': maxArm_index})
 
         #BanditEnv.__init__(self, p_dist=[0.1, 0.2, 0.3, 0.4, 0.8, 0.9, 0.99, 0.7, 0.8, 1], r_dist=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1], info={'optimal_arm':10})
