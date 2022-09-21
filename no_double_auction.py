@@ -60,10 +60,12 @@ class noDoubleAuction():
             remain_IRD.pop(self.ird_index[i])
             self.k += 1
 
-
-            
+        print('no double ㄱㅏㄱㅕㄱ',self.p_ird,self.p_isd,self.p_ird-self.p_isd)
+        print(self.win_ISD)
+        print(self.win_IRD)
         self.win_ISD, self.win_IRD = self.notIR(self.win_ISD,self.win_IRD)
-
+        print(self.win_ISD)
+        print(self.win_IRD)
         return self.win_IRD, self.win_ISD, self.p_ird, self.p_isd, self.k, remain_IRD
 
     def notIR(self,ISD,IRD):
@@ -86,22 +88,24 @@ class noDoubleAuction():
             ISD_temp_ask.setdefault(key,{'True_ask':informationOfISD[key]['ask']})
             #ISD_temp_ask[key]['True_ask'] = informationOfISD[key]['ask']
             if index % 2 == 0:
-                falseAsk = round(random.uniform((informationOfISD[key]['ask'] + 1), 10), 3)
-                ISD_temp_ask[key]['ask'] = falseAsk
-            else:
                 falseAsk = round(random.uniform(3, (informationOfISD[key]['ask'] - 1)), 3)
                 ISD_temp_ask[key]['ask'] = falseAsk
+            else:
+                falseAsk = round(random.uniform((informationOfISD[key]['ask'] + 1), 10), 3)
+                ISD_temp_ask[key]['ask'] = falseAsk
+
 
         IRD_temp_bid = dict()
         for index,(key,value) in enumerate(informationOfIRD.items()):
             IRD_temp_bid.setdefault(key,{'True_bid':informationOfIRD[key]['bid']})
             #IRD_temp_bid[key]['True_bid'] = informationOfIRD[key]['bid']
             if index % 2 == 0:
-                falseBid = round(random.uniform((informationOfIRD[key]['bid'] + 1), 14), 3)
-                IRD_temp_bid[key]['bid'] = falseBid
-            else:
                 falseBid = round(random.uniform(0, (informationOfIRD[key]['bid'] - 1)), 3)
                 IRD_temp_bid[key]['bid'] = falseBid
+            else:
+                falseBid = round(random.uniform((informationOfIRD[key]['bid'] + 1), 14), 3)
+                IRD_temp_bid[key]['bid'] = falseBid
+
 
         return ISD_temp_ask, IRD_temp_bid
 

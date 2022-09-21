@@ -1,6 +1,8 @@
 import math
 import random
 import copy
+
+import matplotlib
 import matplotlib.pyplot as plt
 import time
 import numpy as np
@@ -37,7 +39,9 @@ class SimulationEXE():
 	def main(self):
 		start = time.time()
 		print(start)
-
+		totalTask = 0
+		totalTaskDTS = 0
+		totalTaskUCB = 0
 		# discount factor
 		print(mp.cpu_count())
 		gamma_PDTS = 0.99
@@ -96,7 +100,7 @@ class SimulationEXE():
 		self.gaussianTS = gaussianTS(self.NumberOfIoT,totalRound)
 		self.exe_DTS = exe_DTS(self.NumberOfIoT,totalRound)
 		self.DUCB = DUCB(self.NumberOfIoT,totalRound)
-
+		print('파이참',matplotlib.get_cachedir())
 		# taskGenerationRate = 0.1 * math.pow(10, 6)
 		# taskDataEntrySize = 4 * 8 * math.pow(10, 6)
 		# taskResultSize = 5 * math.pow(10, 3)
@@ -123,6 +127,10 @@ class SimulationEXE():
 		numberOfTaskD2D2_gauss = 0
 		numberOfTaskD2D1_DUCB = 0
 		numberOfTaskD2D2_DUCB = 0
+
+		proTaskThroughput = np.zeros(totalRound)
+		DTSTaskThroughput = np.zeros(totalRound)
+		UCBTaskThroughput = np.zeros(totalRound)
 
 		self.D2Dlink_1 = []
 		self.D2Dlink_1_IRD = []
@@ -195,6 +203,7 @@ class SimulationEXE():
 		regretSumOfDUCB_D2D2 = np.zeros(totalRound)
 
 		# Utility list
+
 		utilityOfIBD_D2D1 = np.zeros(totalRound)
 		utilityOfIRD_D2D1 = np.zeros(totalRound)
 		utilityOfISD_D2D1 = np.zeros(totalRound)
@@ -274,9 +283,9 @@ class SimulationEXE():
 					remainD2Dlink_1_IRD = list(set(self.D2Dlink_1_IRD) - set(completeTaskD2DIRD))
 					remainD2Dlink_2_IRD = list(set(self.D2Dlink_2_IRD) - set(completeTaskD2D2IRD))
 					totalRemainMEC = list(set(self.MECoffloading) - set(completeTaskMEC))
-					numberOffailureTask += (len(totalRemainMEC) + len(remainD2Dlink_1_IRD) + len(remainD2Dlink_2_IRD))
-					numberOffailureTask_gauss += (len(totalRemainMEC) + len(remainD2Dlink_1_IRD_gauss) + len(remainD2Dlink_2_IRD_gauss))
-					numberOffailureTask_DUCB += (len(totalRemainMEC) + len(remainD2Dlink_1_IRD_DUCB) + len(remainD2Dlink_2_IRD_DUCB))
+					numberOffailureTask = (len(totalRemainMEC) + len(remainD2Dlink_1_IRD) + len(remainD2Dlink_2_IRD))
+					numberOffailureTask_gauss = (len(totalRemainMEC) + len(remainD2Dlink_1_IRD_gauss) + len(remainD2Dlink_2_IRD_gauss))
+					numberOffailureTask_DUCB = (len(totalRemainMEC) + len(remainD2Dlink_1_IRD_DUCB) + len(remainD2Dlink_2_IRD_DUCB))
 					print('남은작업', len(totalRemainMEC), totalRemainMEC)
 					print('남은작업', len(remainD2Dlink_1_IRD_gauss), remainD2Dlink_1_IRD_gauss)
 					print('남은작업', len(remainD2Dlink_2_IRD_gauss), remainD2Dlink_2_IRD_gauss)
@@ -630,6 +639,9 @@ class SimulationEXE():
 			if len(answerOfwinISD) == 0:
 				print('no winner D2D1_P')
 				regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + 1
+				utilityOfIBD_D2D1[systemTime] = utilityOfIBD_D2D1[systemTime - 1]
+				utilityOfIRD_D2D1[systemTime] = utilityOfIRD_D2D1[systemTime - 1]
+				utilityOfISD_D2D1[systemTime] = utilityOfISD_D2D1[systemTime - 1]
 			else:
 				gamma_PDTS = gamma_PDTS * 0.99
 				opt_ISD = self.proposed_DTS.proposed_DTS(answerOfwinISD,gamma_PDTS)
@@ -642,8 +654,14 @@ class SimulationEXE():
 
 				sorting_opt_ISD = dict(sorted(answerOfwinISD.items(), key=lambda x: x[1]['mabResult'],reverse=True))
 				matchList_pro = self.matchingIRDISD(win_IRD, sorting_opt_ISD, self.task_D2D1, IIoT)
-				utilityOfIBD_D2D1[systemTime], utilityOfIRD_D2D1[systemTime], utilityOfISD_D2D1[
-					systemTime] = self.utilityComputation(len(matchList_pro), bid_price, ask_price, self.win_ISD, win_IRD)
+				print('매칭결과',matchList_pro)
+				# utilityOfIBD_D2D1[systemTime], utilityOfIRD_D2D1[systemTime], utilityOfISD_D2D1[
+				# 	systemTime] = self.utilityComputation(len(matchList_pro), bid_price, ask_price, self.win_ISD, win_IRD)
+				temp_U_D2D1R, temp_U_D2D1S, temp_U_D2D1B = self.utilityComputation(len(matchList_pro), bid_price, ask_price, self.win_ISD, win_IRD)
+				print('유틸리티pro1',temp_U_D2D1R, temp_U_D2D1S, temp_U_D2D1B)
+				utilityOfIBD_D2D1[systemTime] = utilityOfIBD_D2D1[systemTime - 1] + temp_U_D2D1B
+				utilityOfIRD_D2D1[systemTime] = utilityOfIRD_D2D1[systemTime - 1] + temp_U_D2D1R
+				utilityOfISD_D2D1[systemTime] = utilityOfISD_D2D1[systemTime - 1] + temp_U_D2D1S
 				numberOffailureTask, numberTasksCanceledAndConcludedD2D1, completeTaskD2DIRD, completeTaskD2DISD, temp_D2D1Offloading = self.D2DOffloading(
 					matchList_pro, self.task_D2D1, systemTime, numberOffailureTask,
 					numberTasksCanceledAndConcludedD2D1, IIoT, completeTaskD2DIRD, completeTaskD2DISD,
@@ -657,6 +675,9 @@ class SimulationEXE():
 			if len(answerOfwinISD_D2D2) == 0:
 				print('no winner D2D2_P')
 				regretSumOfPDTS_D2D2[systemTime] = regretSumOfPDTS_D2D2[systemTime - 1] + 1
+				utilityOfIBD_D2D2[systemTime] = utilityOfIBD_D2D2[systemTime - 1]
+				utilityOfIRD_D2D2[systemTime] = utilityOfIRD_D2D2[systemTime - 1]
+				utilityOfISD_D2D2[systemTime] = utilityOfISD_D2D2[systemTime - 1]
 			else:
 				gamma_PDTS_D2D2 = gamma_PDTS_D2D2 * 0.99
 				opt_ISD_D2D2 = self.proposed_DTS.proposed_DTS(answerOfwinISD_D2D2, gamma_PDTS_D2D2)
@@ -667,9 +688,16 @@ class SimulationEXE():
 
 				sorting_opt_ISD_D2D2 = dict(sorted(answerOfwinISD_D2D2.items(), key=lambda x: x[1]['mabResult'], reverse=True))
 				matchList_pro_D2D2 = self.matchingIRDISD(win_IRD_D2D2, sorting_opt_ISD_D2D2, self.task_D2D2, IIoT)
-				utilityOfIBD_D2D2[systemTime], utilityOfIRD_D2D2[systemTime], utilityOfISD_D2D2[
-					systemTime] = self.utilityComputation(len(matchList_pro_D2D2), bid_price_D2D2, ask_price_D2D2,
-														  win_ISD_D2D2, win_IRD_D2D2)
+				print('매칭결과2',matchList_pro_D2D2)
+				# utilityOfIBD_D2D2[systemTime], utilityOfIRD_D2D2[systemTime], utilityOfISD_D2D2[
+				# 	systemTime] = self.utilityComputation(len(matchList_pro_D2D2), bid_price_D2D2, ask_price_D2D2,
+				# 										  win_ISD_D2D2, win_IRD_D2D2)
+				temp_U_D2D2R, temp_U_D2D2S, temp_U_D2D2B = self.utilityComputation(len(matchList_pro_D2D2), bid_price_D2D2, ask_price_D2D2,
+				 										  win_ISD_D2D2, win_IRD_D2D2)
+				print('유틸리티pro2', temp_U_D2D2R, temp_U_D2D2S, temp_U_D2D2B)
+				utilityOfIBD_D2D2[systemTime] = utilityOfIBD_D2D2[systemTime - 1] + temp_U_D2D2B
+				utilityOfIRD_D2D2[systemTime] = utilityOfIRD_D2D2[systemTime - 1] + temp_U_D2D2R
+				utilityOfISD_D2D2[systemTime] = utilityOfISD_D2D2[systemTime - 1] + temp_U_D2D2S
 				numberOffailureTask, numberTasksCanceledAndConcludedD2D2, completeTaskD2D2IRD, completeTaskD2D2ISD, temp_D2D2Offloading = self.D2DOffloading(
 					matchList_pro_D2D2, self.task_D2D2, systemTime, numberOffailureTask,
 					numberTasksCanceledAndConcludedD2D2, IIoT, completeTaskD2D2IRD, completeTaskD2D2ISD,
@@ -751,13 +779,18 @@ class SimulationEXE():
 			for key, value in list(self.win_ISD_noDouble.items()):
 				answerOfwinISD_DUCB[key]['importance'] = presentReward[key]
 				answerOfwinISD_DUCB[key]['reward'] = tempReward[key]
+				#answerOfwinISD_DUCB[key]['importance'] = answerOfISD[key]
 
 			#answerOfwinISD_DUCB = self.MABanswer(self.win_ISD_noDouble)
 			if len(answerOfwinISD_DUCB) == 0:
 				print('no winner D2D1_DUCB')
 				regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + 1
+				utilityOfIBD_D2D1_DUCB[systemTime] = utilityOfIBD_D2D1_DUCB[systemTime - 1]
+				utilityOfIRD_D2D1_DUCB[systemTime] = utilityOfIRD_D2D1_DUCB[systemTime - 1]
+				utilityOfISD_D2D1_DUCB[systemTime] = utilityOfISD_D2D1_DUCB[systemTime - 1]
 			else:
 				gamma_DUCB = gamma_DUCB * 0.99
+				#opt_ISD_DUCB = self.proposed_DTS.proposed_DTS(answerOfwinISD_DUCB,gamma_DUCB)
 				opt_ISD_DUCB = self.DUCB.discounted_UCB(answerOfwinISD_DUCB, gamma_DUCB,systemTime,self.subSystemTime)
 				print('커커', opt_ISD_DUCB)
 				regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + self.regret_analysis(
@@ -768,12 +801,18 @@ class SimulationEXE():
 						sorted(answerOfwinISD_DUCB.items(), key=lambda x: x[1]['mabResult'], reverse=True))
 				matchList_DUCB = self.matchingIRDISD(win_IRD_noDouble, sorting_opt_ISD_DUCB, self.task_D2D1_DUCB,
 														  IIoT)
-
-				utilityOfIBD_D2D1_DUCB[systemTime], utilityOfIRD_D2D1_DUCB[systemTime], utilityOfISD_D2D1_DUCB[
-						systemTime] = self.utilityComputation(len(matchList_DUCB), bid_price_noDouble,
-															  ask_price_noDouble,
-															  self.win_ISD_noDouble, win_IRD_noDouble)
-
+				print('매칭결과3',matchList_DUCB)
+				# utilityOfIBD_D2D1_DUCB[systemTime], utilityOfIRD_D2D1_DUCB[systemTime], utilityOfISD_D2D1_DUCB[
+				# 		systemTime] = self.utilityComputation(len(matchList_DUCB), bid_price_noDouble,
+				# 											  ask_price_noDouble,
+				# 											  self.win_ISD_noDouble, win_IRD_noDouble)
+				temp_U_D2D2R, temp_U_D2D2S, temp_U_D2D2B = self.utilityComputation(len(matchList_DUCB), bid_price_noDouble,
+				 											  ask_price_noDouble,
+				 											  self.win_ISD_noDouble, win_IRD_noDouble)
+				print('유틸리티DUCB1', temp_U_D2D2R, temp_U_D2D2S, temp_U_D2D2B)
+				utilityOfIBD_D2D1_DUCB[systemTime] = utilityOfIBD_D2D1_DUCB[systemTime - 1] + temp_U_D2D2B
+				utilityOfIRD_D2D1_DUCB[systemTime] = utilityOfIRD_D2D1_DUCB[systemTime - 1] + temp_U_D2D2R
+				utilityOfISD_D2D1_DUCB[systemTime] = utilityOfISD_D2D1_DUCB[systemTime - 1] + temp_U_D2D2S
 				numberOffailureTask_DUCB, numberTasksCanceledAndConcludedD2D1_DUCB, completeTaskD2DIRD_DUCB, completeTaskD2DISD_DUCB, temp_D2D1Offloading_DUCB = self.D2DOffloading(
 						matchList_DUCB, self.task_D2D1_DUCB, systemTime, numberOffailureTask_DUCB,
 						numberTasksCanceledAndConcludedD2D1_DUCB, IIoT, completeTaskD2DIRD_DUCB,
@@ -784,6 +823,7 @@ class SimulationEXE():
 			for key, value in list(win_ISD_noDouble_D2D2.items()):
 				answerOfwinISD_DUCB_D2D2[key]['importance'] = presentReward2[key]
 				answerOfwinISD_DUCB_D2D2[key]['reward'] = tempReward2[key]
+				#answerOfwinISD_DUCB_D2D2[key]['importance'] = answerOfISD_D2D2[key]
 			print(win_ISD_noDouble_D2D2)
 			print('우ㅏㅣㅁ루아', answerOfwinISD_DUCB_D2D2)
 
@@ -792,8 +832,12 @@ class SimulationEXE():
 			if len(answerOfwinISD_DUCB_D2D2) == 0:
 				print('no winner D2D2_DUCB')
 				regretSumOfDUCB_D2D2[systemTime] = regretSumOfDUCB_D2D2[systemTime - 1] + 1
+				utilityOfIBD_D2D2_DUCB[systemTime] = utilityOfIBD_D2D2_DUCB[systemTime - 1]
+				utilityOfIRD_D2D2_DUCB[systemTime] = utilityOfIRD_D2D2_DUCB[systemTime - 1]
+				utilityOfISD_D2D2_DUCB[systemTime] = utilityOfISD_D2D2_DUCB[systemTime - 1]
 			else:
 				gamma_DUCB_D2D2 = gamma_DUCB_D2D2 * 0.99
+				#opt_ISD_DUCB_D2D2 = self.proposed_DTS.proposed_DTS(answerOfwinISD_DUCB_D2D2,gamma_DUCB_D2D2)
 				opt_ISD_DUCB_D2D2 = self.DUCB.discounted_UCB(answerOfwinISD_DUCB_D2D2, gamma_DUCB_D2D2,systemTime,self.subSystemTime)
 				print('커커', opt_ISD_DUCB_D2D2)
 
@@ -808,12 +852,18 @@ class SimulationEXE():
 				matchList_DUCB_D2D2 = self.matchingIRDISD(win_IRD_noDouble_D2D2, sorting_opt_ISD_DUCB_D2D2,
 															   self.task_D2D2_DUCB,
 															   IIoT)
-
-				utilityOfIBD_D2D2_DUCB[systemTime], utilityOfIRD_D2D2_DUCB[systemTime], utilityOfISD_D2D2_DUCB[
-						systemTime] = self.utilityComputation(len(matchList_DUCB_D2D2), bid_price_noDouble_D2D2,
+				print('매칭결과4',matchList_DUCB_D2D2)
+				# utilityOfIBD_D2D2_DUCB[systemTime], utilityOfIRD_D2D2_DUCB[systemTime], utilityOfISD_D2D2_DUCB[
+				# 		systemTime] = self.utilityComputation(len(matchList_DUCB_D2D2), bid_price_noDouble_D2D2,
+				# 											  ask_price_noDouble_D2D2,
+				# 											  win_ISD_noDouble_D2D2, win_IRD_noDouble_D2D2)
+				temp_U_D2D2R, temp_U_D2D2S, temp_U_D2D2B = self.utilityComputation(len(matchList_DUCB_D2D2), bid_price_noDouble_D2D2,
 															  ask_price_noDouble_D2D2,
 															  win_ISD_noDouble_D2D2, win_IRD_noDouble_D2D2)
-
+				print('유틸리티DUCB',temp_U_D2D2R, temp_U_D2D2S, temp_U_D2D2B)
+				utilityOfIBD_D2D2_DUCB[systemTime] = utilityOfIBD_D2D2_DUCB[systemTime - 1] + temp_U_D2D2B
+				utilityOfIRD_D2D2_DUCB[systemTime] = utilityOfIRD_D2D2_DUCB[systemTime - 1] + temp_U_D2D2R
+				utilityOfISD_D2D2_DUCB[systemTime] = utilityOfISD_D2D2_DUCB[systemTime - 1] + temp_U_D2D2S
 				numberOffailureTask_DUCB, numberTasksCanceledAndConcludedD2D2_DUCB, completeTaskD2D2IRD_DUCB, completeTaskD2D2ISD_DUCB, temp_D2D2Offloading_DUCB = self.D2DOffloading(
 						matchList_DUCB_D2D2, self.task_D2D2_DUCB, systemTime, numberOffailureTask_DUCB,
 						numberTasksCanceledAndConcludedD2D2_DUCB, IIoT, completeTaskD2D2IRD_DUCB,
@@ -878,7 +928,22 @@ class SimulationEXE():
 			print('남은작업2',)
 			print('남은작업2', D2Dlink_2_IRD_already)
 			print('남은작업2', D2Dlink_2_IRD_already)
-
+			totalTask += len(completeTaskD2DIRD) + len(completeTaskD2D2IRD)
+			totalTaskDTS += len(completeTaskD2DIRD_gauss) + len(completeTaskD2D2IRD_gauss)
+			totalTaskUCB += len(completeTaskD2DIRD_DUCB) + len(completeTaskD2D2IRD_DUCB)
+			proTaskThroughput[systemTime] = totalTask / (numberOfTaskMEC + numberOfTaskD2D1 + numberOfTaskD2D2)
+			DTSTaskThroughput[systemTime] = totalTaskDTS / (numberOfTaskMEC + numberOfTaskD2D1_gauss + numberOfTaskD2D2_gauss)
+			UCBTaskThroughput[systemTime] = totalTaskUCB / (numberOfTaskMEC + numberOfTaskD2D1_DUCB + numberOfTaskD2D2_DUCB)
+			print(proTaskThroughput)
+			print(numberOfTaskMEC)
+			print(numberOfTaskD2D1)
+			print(numberOfTaskD2D2)
+			print(numberOfTaskD2D1_gauss)
+			print(numberOfTaskD2D2_gauss)
+			print(numberOfTaskD2D1_DUCB)
+			print(numberOfTaskD2D2_DUCB)
+			print(DTSTaskThroughput)
+			print(UCBTaskThroughput)
 			systemTime += 1
 
 			if systemTime == totalRound:
@@ -914,25 +979,54 @@ class SimulationEXE():
 				print('=============D2D2 regret')
 				print(regretSumOfPDTS_D2D2)
 				print(regretSumOfGauss_D2D2)
-				print(utilityOfISD_D2D2)
-				print(utilityOfIRD_D2D2)
-				print(utilityOfIBD_D2D2)
-				print(utilityOfISD_D2D1)
-				print(utilityOfIRD_D2D1)
-				print(utilityOfIBD_D2D1)
-				print(utilityOfISD_D2D2_gauss)
-				print(utilityOfIRD_D2D2_gauss)
-				print(utilityOfIBD_D2D2_gauss)
-				print(utilityOfISD_D2D1_gauss)
-				print(utilityOfIRD_D2D1_gauss)
-				print(utilityOfIBD_D2D1_gauss)
+
+
 				self.regretGraphGeneration(regretSumOfPDTS, regretSumOfPDTS_D2D2, regretSumOfGauss,
 									  regretSumOfGauss_D2D2, regretSumOfDUCB,regretSumOfDUCB_D2D2,totalRound)
-				self.utilityGraphGeneration(utilityOfIBD_D2D1, utilityOfIBD_D2D2, utilityOfIBD_D2D1_gauss, utilityOfIBD_D2D2_gauss, utilityOfIBD_D2D1_DUCB,utilityOfIBD_D2D2_DUCB,totalRound)
-				self.utilityGraphGeneration(utilityOfIRD_D2D1, utilityOfIRD_D2D2, utilityOfIBD_D2D1_gauss,
-											utilityOfIRD_D2D2_gauss,utilityOfIRD_D2D1_DUCB,utilityOfIRD_D2D2_DUCB, totalRound)
-				self.utilityGraphGeneration(utilityOfISD_D2D1, utilityOfISD_D2D2, utilityOfISD_D2D1_gauss,
-											utilityOfISD_D2D2_gauss, utilityOfISD_D2D1_DUCB,utilityOfISD_D2D2_DUCB,totalRound)
+				tempUtility_D2D1 = np.zeros(totalRound)
+				tempUtility_D2D2 = np.zeros(totalRound)
+				tempUtility_D2D1_DTS = utilityOfIRD_D2D1_gauss + utilityOfISD_D2D1_gauss + utilityOfIBD_D2D1_gauss
+				tempUtility_D2D2_DTS = utilityOfIRD_D2D2_gauss + utilityOfISD_D2D2_gauss + utilityOfIBD_D2D2_gauss
+				tempUtility_D2D1_UCB = np.zeros(totalRound)
+				tempUtility_D2D2_UCB = np.zeros(totalRound)
+				for i in range(totalRound):
+					tempUtility_D2D1[i] = (utilityOfIRD_D2D1[i] + utilityOfISD_D2D1[i] + utilityOfIBD_D2D1[i]) / 3
+					tempUtility_D2D2[i] = (utilityOfIRD_D2D2[i] + utilityOfISD_D2D2[i] + utilityOfIBD_D2D2[i]) / 3
+					tempUtility_D2D1_UCB[i] = (utilityOfIRD_D2D1_DUCB[i] + utilityOfISD_D2D1_DUCB[i] + utilityOfIBD_D2D1_DUCB[i]) / 3
+					tempUtility_D2D2_UCB[i] = (utilityOfIRD_D2D2_DUCB[i] + utilityOfISD_D2D2_DUCB[i] + utilityOfIBD_D2D2_DUCB[i]) / 3
+				# self.utilityGraphGeneration(tempUtility_D2D1, tempUtility_D2D2, tempUtility_D2D1_DTS,
+				# 							tempUtility_D2D2_DTS, tempUtility_D2D1_UCB, tempUtility_D2D2_UCB,
+				# 							totalRound,0)
+				# self.utilityGraphGeneration(utilityOfIRD_D2D1, utilityOfIRD_D2D2, tempUtility_D2D1_DTS,
+				# 							tempUtility_D2D2_DTS, utilityOfIRD_D2D1_DUCB, utilityOfIRD_D2D2_DUCB,
+				# 							totalRound,1)
+				# self.utilityGraphGeneration(utilityOfISD_D2D1, utilityOfISD_D2D2, tempUtility_D2D1_DTS,
+				# 							tempUtility_D2D2_DTS, utilityOfISD_D2D1_DUCB, utilityOfISD_D2D2_DUCB,
+				# 							totalRound,2)
+				# self.utilityGraphGeneration(utilityOfIBD_D2D1, utilityOfIBD_D2D2, tempUtility_D2D1_DTS,
+				# 							tempUtility_D2D2_DTS, utilityOfIBD_D2D1_DUCB, utilityOfIBD_D2D2_DUCB,
+				# 							totalRound,3)
+				self.throughputGraph(totalRound,proTaskThroughput,DTSTaskThroughput,UCBTaskThroughput)
+				print(tempUtility_D2D1)
+				print(tempUtility_D2D2)
+				print(tempUtility_D2D1_UCB)
+				print(tempUtility_D2D2_UCB)
+				#self.utilityGraphGeneration(utilityOfIBD_D2D1, utilityOfIBD_D2D2, utilityOfIBD_D2D1_gauss, utilityOfIBD_D2D2_gauss, utilityOfIBD_D2D1_DUCB,utilityOfIBD_D2D2_DUCB,totalRound)
+				# self.utilityGraphGeneration(utilityOfIRD_D2D1, utilityOfIRD_D2D2, utilityOfIBD_D2D1_gauss,
+				# 							utilityOfIRD_D2D2_gauss,utilityOfIRD_D2D1_DUCB,utilityOfIRD_D2D2_DUCB, totalRound)
+				# self.utilityGraphGeneration(utilityOfISD_D2D1, utilityOfISD_D2D2, utilityOfISD_D2D1_gauss,
+				# 							utilityOfISD_D2D2_gauss, utilityOfISD_D2D1_DUCB,utilityOfISD_D2D2_DUCB,totalRound)
+	def throughputGraph(self,totalRound,proTaskThroughput,DTSTaskThroughput,UCBTaskThroughput):
+
+		plt.grid()
+		plt.plot(range(totalRound), proTaskThroughput, marker='d', markevery=999)
+		plt.plot(range(totalRound), DTSTaskThroughput, marker='s', markevery=999)
+		plt.plot(range(totalRound), UCBTaskThroughput, marker='^', markevery=999)
+		plt.legend(['Proposed', 'Gaussian', 'UCB'])
+		plt.title('Throughput')
+		plt.xlabel('Iterations')
+		plt.ylabel('처리율')
+		plt.show()
 
 	def regretGraphGeneration(self,regretSumOfPDTS,regretSumOfPDTS_D2D2,regretSumOfGauss,regretSumOfGauss_D2D2,regretSumOfDUCB,regretSumOfDUCB_D2D2,totalRound):
 		Y1 = regretSumOfPDTS + regretSumOfPDTS_D2D2
@@ -965,28 +1059,40 @@ class SimulationEXE():
 		Y2 = regretSumOfGauss + regretSumOfGauss_D2D2
 		Y3 = regretSumOfDUCB + regretSumOfDUCB_D2D2
 
-		plt.grid()
-		plt.plot(range(totalRound), Y1,marker='.',markevery=1000)
-		plt.plot(range(totalRound), Y2,marker='*',markevery=1000)
-		plt.plot(range(totalRound), Y3,marker='D',markevery=1000)
-		plt.legend(['Proposed', 'Gaussian'])
-		plt.title('Regret')
-		plt.xlabel('Iterations')
-		plt.ylabel('accumulate regret')
+		plt.grid(visible=True,axis='x')
+		plt.plot(range(totalRound), Y1,marker='d',markevery=999)
+		plt.plot(range(totalRound), Y2,marker='s',markevery=999)
+		plt.plot(range(totalRound), Y3,marker='^',markevery=999)
+		plt.legend(['Proposed', 'EXE_DTS','PhtBandit'])
+		#plt.title('Regret')
+		plt.xlabel('Iteration t')
+		plt.ylabel('cumulative regret')
+		plt.savefig('Regret.png')
 		plt.show()
 
-	def utilityGraphGeneration(self,pUtility,pUtility2,gUtility,gUtility2,dUtility,dUtility2,totalRound):
+	def utilityGraphGeneration(self,pUtility,pUtility2,gUtility,gUtility2,dUtility,dUtility2,totalRound,type):
 		Y1 = pUtility + pUtility2
 		Y2 = gUtility + gUtility2
 		Y3 = dUtility + dUtility2
-		plt.grid()
-		plt.plot(range(totalRound), Y1)
-		plt.plot(range(totalRound), Y2)
-		plt.plot(range(totalRound), Y3)
-		plt.legend(['Proposed', 'Gaussian', 'DUCB'])
-		plt.title('Utility')
-		plt.xlabel('Iterations')
-		plt.ylabel('accumulate Utility')
+		plt.grid(False, axis='y')
+		plt.plot(range(totalRound), Y1,marker='d',markevery=999)
+		#plt.plot(range(totalRound), Y2)
+		plt.plot(range(totalRound), Y3,marker='^',markevery=999)
+		plt.legend(['Proposed', 'non double auction'])
+		plt.xlabel('Iteration t')
+		plt.ylabel('cumulative Utility')
+		if type == 0:
+			plt.title('Total Utility')
+			plt.savefig('total Utility.png')
+		elif type == 1:
+			plt.title('Total Utility of IRD')
+			plt.savefig('total Utility of IRD.png')
+		elif type == 2:
+			plt.title('Total Utility of ISD')
+			plt.savefig('total Utility of ISD.png')
+		elif type == 3:
+			plt.title('Total Utility of IBD')
+			plt.savefig('total Utility of IBD.png')
 		plt.show()
 
 	def initialization(self,IIoT):
@@ -1076,14 +1182,27 @@ class SimulationEXE():
 	def utilityComputation(self,num, bid, ask, ISD_actualAsk, IRD_actualBid):
 		ISD = 0
 		IRD = 0
+
+		j = 0
 		for key, value in list(ISD_actualAsk.items()):
-			ISD += (ask - value['ask'])
-			print('ask_isd',key,ask,value['ask'],ISD)
+			if j < num:
+				temp = ask - value['ask']
+				ISD += temp
+				print('ask_isd',key,ask,value['ask'],ISD)
+			j += 1
+		j = 0
 		for key, value in list(IRD_actualBid.items()):
-			IRD += (value['bid'] - bid)
-			print('bid_ird',key,value['bid'],bid,IRD)
+			if j < num:
+				temp = value['bid'] - bid
+				IRD += temp
+				print('bid_ird',key,value['bid'],bid,IRD)
+			j += 1
 		IBD = num * (bid - ask)
 		print(num,IBD,bid-ask)
+		# if IRD != 0 and num != 0:
+		# 	IRD = IRD / num
+		# if ISD != 0 and num != 0:
+		# 	ISD = ISD / num
 		return IBD, IRD, ISD
 
 	# def UCBanswer(self,win_ISD,DR,energy,com,systemTime):
@@ -1154,11 +1273,13 @@ class SimulationEXE():
 					if selectCount[index] != 1 and preReward[index] != 0:
 						reward = ((preReward[index] * (selectCount[index] - 1)) + reward) / selectCount[index]
 						#reward = 1 / (1 + math.exp(-reward))
-					preReward = reward
+					preReward[index] = reward
 				else:
 					reward = 0.5 * ((1 / DR[j]) + (1 / com[index])) + 0.5 * energy[j]
 					if selectCount[index] != 0:
-						print('으라야',preReward[index],selectCount[index],reward)
+						print('으라야',preReward[index])
+						print(selectCount[index])
+						print(reward)
 						reward = ((preReward[index] * (selectCount[index] - 1)) + reward) / selectCount[index]
 					#reward = 1 / (1 + math.exp(-reward))
 					preReward[index] = reward
