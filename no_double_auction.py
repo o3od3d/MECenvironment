@@ -60,12 +60,9 @@ class noDoubleAuction():
             remain_IRD.pop(self.ird_index[i])
             self.k += 1
 
-        print('no double ㄱㅏㄱㅕㄱ',self.p_ird,self.p_isd,self.p_ird-self.p_isd)
-        print(self.win_ISD)
-        print(self.win_IRD)
+
         self.win_ISD, self.win_IRD = self.notIR(self.win_ISD,self.win_IRD)
-        print(self.win_ISD)
-        print(self.win_IRD)
+
         return self.win_IRD, self.win_ISD, self.p_ird, self.p_isd, self.k, remain_IRD
 
     def notIR(self,ISD,IRD):

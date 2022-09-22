@@ -157,22 +157,22 @@ class Task():
     def finalizeTask(self, systemTime,key):
         if self.deadlineLatency[key] == -1:
             self.taskStatus[key] = self.TASK_CONCLUEDE
-            print('adsfdasf')
+            #print('adsfdasf')
         elif systemTime < (self.generateTime[key] + self.deadlineLatency[key]):
             self.taskStatus[key] = self.TASK_CONCLUEDE
-            print('ㅅㄱ',systemTime,':',self.generateTime[key],'+',self.deadlineLatency[key],'gg',key)
+            #print('ㅅㄱ',systemTime,':',self.generateTime[key],'+',self.deadlineLatency[key],'gg',key)
         else:
             self.taskStatus[key] = self.TASK_CANCELLED
-            print('ㅅㅍ',systemTime,':',self.generateTime[key],'+',self.deadlineLatency[key],'gg',key)
+            #print('ㅅㅍ',systemTime,':',self.generateTime[key],'+',self.deadlineLatency[key],'gg',key)
 
     def checkTaskTime(self, systemTime, key):
         if systemTime + 1 < (self.generateTime[key] + self.deadlineLatency[key]):
             self.taskStatus[key] = self.TASK_ALIVE
-            print('ㅅㄱ3', systemTime, ':', self.generateTime[key], '+', self.deadlineLatency[key], 'gg', key)
+            #print('ㅅㄱ3', systemTime, ':', self.generateTime[key], '+', self.deadlineLatency[key], 'gg', key)
             return False
         else:
             self.taskStatus[key] = self.TASK_CANCELLED
-            print('ㅅㅍ3', systemTime, ':', self.generateTime[key], '+', self.deadlineLatency[key], 'gg', key)
+            #print('ㅅㅍ3', systemTime, ':', self.generateTime[key], '+', self.deadlineLatency[key], 'gg', key)
             return True
 
 

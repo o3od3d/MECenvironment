@@ -60,9 +60,7 @@ class doubleAuction():
                         break
             remain_IRD.pop(self.ird_index[i])
             self.k += 1
-        print(self.win_IRD)
-        print(self.win_ISD)
-        print('double ㄱㅏㄱㅕㄱ',self.p_ird,self.p_isd,self.p_ird-self.p_isd)
+
         return self.win_IRD, self.win_ISD, self.p_ird, self.p_isd, self.k, remain_IRD
 
     def noTruthfulness(self):
