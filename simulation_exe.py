@@ -134,6 +134,10 @@ class SimulationEXE():
 		DTSTaskThroughput2 = np.zeros(totalRound)
 		UCBTaskThroughput2 = np.zeros(totalRound)
 
+		proOut = np.zeros(totalRound)
+		DTSOut = np.zeros(totalRound)
+		UCBOut = np.zeros(totalRound)
+
 		self.D2Dlink_1 = []
 		self.D2Dlink_1_IRD = []
 		self.D2Dlink_1_ISD = []
@@ -275,6 +279,19 @@ class SimulationEXE():
 		DTS = 0
 		UCB = 0
 		temp_time2 = 0
+		ProCount = 0
+		DTSCount = 0
+		UCBCount = 0
+		ProTotalCount = 0
+		DTSTotalCount = 0
+		UCBTotalCount = 0
+
+		proFair = np.zeros(totalRound)
+		DTSFair = np.zeros(totalRound)
+		UCBFair = np.zeros(totalRound)
+		# proFair = [[0 for col in range(self.NumberOfIoT) for row in range(totalRound)]]
+		# DTSFair = [[0 for col in range(self.NumberOfIoT) for row in range(totalRound)]]
+		# UCBFair = [[0 for col in range(self.NumberOfIoT) for row in range(totalRound)]]
 
 		while systemTime != totalRound:
 			print('time : ',systemTime,'낄낄',time.time() - start)
@@ -369,10 +386,11 @@ class SimulationEXE():
 				D2Dlink_2_ISD_already_DUCB = copy.deepcopy(D2Dlink_2_ISD_already)
 				D2Dlink_1_already_DUCB = copy.deepcopy(D2Dlink_1_already)
 				D2Dlink_2_already_DUCB = copy.deepcopy(D2Dlink_2_already)
-				answerOfISD,DR,energy,tempReward,presentReward,SNR1 = self.MABanswer(D2Dlink_1_ISD_already,self.service_D2D1.getCompLoad(),presentReward,selectCount)
+				answerOfISD,DR,energy,tempReward,presentReward,SNR1,noise1 = self.MABanswer(D2Dlink_1_ISD_already,self.service_D2D1.getCompLoad(),presentReward,selectCount,systemTime)
 
-				answerOfISD_D2D2,DR2,energy2,tempReward2,presentReward2,SNR2 = self.MABanswer(D2Dlink_2_ISD_already,self.service_D2D2.getCompLoad(),presentReward2,selectCount)
-
+				answerOfISD_D2D2,DR2,energy2,tempReward2,presentReward2,SNR2,noise2 = self.MABanswer(D2Dlink_2_ISD_already,self.service_D2D2.getCompLoad(),presentReward2,selectCount,systemTime)
+				print('신호',SNR1)
+				print(SNR2)
 
 				# answerOfISD_gaussian = self.MABanswer()
 				# answerOfISD_gaussian_D2D2 =
@@ -643,6 +661,7 @@ class SimulationEXE():
 			if len(answerOfwinISD) == 0:
 				print('no winner D2D1_P')
 				temp_IRD1 = []
+				temp_ISD1 = []
 				regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + 1
 				utilityOfIBD_D2D1[systemTime] = utilityOfIBD_D2D1[systemTime - 1]
 				utilityOfIRD_D2D1[systemTime] = utilityOfIRD_D2D1[systemTime - 1]
@@ -670,7 +689,7 @@ class SimulationEXE():
 				utilityOfIRD_D2D1[systemTime] = utilityOfIRD_D2D1[systemTime - 1] + temp_U_D2D1R
 				utilityOfISD_D2D1[systemTime] = utilityOfISD_D2D1[systemTime - 1] + temp_U_D2D1S
 
-				numberOffailureTask, numberTasksCanceledAndConcludedD2D1, completeTaskD2DIRD, completeTaskD2DISD, temp_D2D1Offloading,temp_IRD1 = self.D2DOffloading(
+				numberOffailureTask, numberTasksCanceledAndConcludedD2D1, completeTaskD2DIRD, completeTaskD2DISD, temp_D2D1Offloading,temp_IRD1,temp_ISD1 = self.D2DOffloading(
 					matchList_pro, self.task_D2D1, systemTime, numberOffailureTask,
 					numberTasksCanceledAndConcludedD2D1, IIoT, completeTaskD2DIRD, completeTaskD2DISD,
 					remainD2Dlink_1_IRD, D2Dlink_1_IRD_already)
@@ -684,6 +703,7 @@ class SimulationEXE():
 			if len(answerOfwinISD_D2D2) == 0:
 				print('no winner D2D2_P')
 				temp_IRD2 = []
+				temp_ISD2 = []
 				regretSumOfPDTS_D2D2[systemTime] = regretSumOfPDTS_D2D2[systemTime - 1] + 1
 				utilityOfIBD_D2D2[systemTime] = utilityOfIBD_D2D2[systemTime - 1]
 				utilityOfIRD_D2D2[systemTime] = utilityOfIRD_D2D2[systemTime - 1]
@@ -710,7 +730,7 @@ class SimulationEXE():
 				utilityOfIBD_D2D2[systemTime] = utilityOfIBD_D2D2[systemTime - 1] + temp_U_D2D2B
 				utilityOfIRD_D2D2[systemTime] = utilityOfIRD_D2D2[systemTime - 1] + temp_U_D2D2R
 				utilityOfISD_D2D2[systemTime] = utilityOfISD_D2D2[systemTime - 1] + temp_U_D2D2S
-				numberOffailureTask, numberTasksCanceledAndConcludedD2D2, completeTaskD2D2IRD, completeTaskD2D2ISD, temp_D2D2Offloading,temp_IRD2 = self.D2DOffloading(
+				numberOffailureTask, numberTasksCanceledAndConcludedD2D2, completeTaskD2D2IRD, completeTaskD2D2ISD, temp_D2D2Offloading,temp_IRD2,temp_ISD2 = self.D2DOffloading(
 					matchList_pro_D2D2, self.task_D2D2, systemTime, numberOffailureTask,
 					numberTasksCanceledAndConcludedD2D2, IIoT, completeTaskD2D2IRD, completeTaskD2D2ISD,
 					remainD2Dlink_2_IRD, D2Dlink_2_IRD_already)
@@ -726,6 +746,7 @@ class SimulationEXE():
 			if len(answerOfwinISD_gaussian) == 0:
 				print('no winner D2D1_GA')
 				temp_IRD_DTS1 = []
+				temp_ISD_DTS1 = []
 				regretSumOfGauss[systemTime] = regretSumOfGauss[systemTime - 1] + 1
 			else:
 				gamma_gaussian = gamma_gaussian * 0.99
@@ -745,7 +766,7 @@ class SimulationEXE():
 													  #bid_price_noDouble, ask_price_noDouble,
 													  #self.win_ISD_noDouble, win_IRD_noDouble)
 
-				numberOffailureTask_gauss, numberTasksCanceledAndConcludedD2D1_gauss, completeTaskD2DIRD_gauss, completeTaskD2DISD_gauss, temp_D2D1Offloading_gauss,temp_IRD_DTS1 = self.D2DOffloading(
+				numberOffailureTask_gauss, numberTasksCanceledAndConcludedD2D1_gauss, completeTaskD2DIRD_gauss, completeTaskD2DISD_gauss, temp_D2D1Offloading_gauss,temp_IRD_DTS1,temp_ISD_DTS1 = self.D2DOffloading(
 				matchList_gauss, self.task_D2D1_gauss, systemTime, numberOffailureTask_gauss,
 				numberTasksCanceledAndConcludedD2D1_gauss, IIoT, completeTaskD2DIRD_gauss, completeTaskD2DISD_gauss,
 				remainD2Dlink_1_IRD_gauss, D2Dlink_1_IRD_already_gauss)
@@ -759,6 +780,7 @@ class SimulationEXE():
 			if len(answerOfwinISD_gaussian_D2D2) == 0:
 				print('no winner D2D2_GA')
 				temp_IRD_DTS2 = []
+				temp_ISD_DTS2 = []
 				regretSumOfGauss_D2D2[systemTime] = regretSumOfGauss_D2D2[systemTime - 1] + 1
 			else:
 				gamma_gaussian_D2D2 = gamma_gaussian_D2D2 * 0.99
@@ -782,7 +804,7 @@ class SimulationEXE():
 					systemTime] = self.utilityComputation(len(matchList_gauss_D2D2), bid_price_D2D2,ask_price_D2D2,win_ISD_D2D2,win_IRD_D2D2)#bid_price_noDouble_D2D2, ask_price_noDouble_D2D2,
 														  #win_ISD_noDouble_D2D2, win_IRD_noDouble_D2D2)
 
-				numberOffailureTask_gauss, numberTasksCanceledAndConcludedD2D2_gauss, completeTaskD2D2IRD_gauss, completeTaskD2D2ISD_gauss, temp_D2D2Offloading_gauss,temp_IRD_DTS2 = self.D2DOffloading(
+				numberOffailureTask_gauss, numberTasksCanceledAndConcludedD2D2_gauss, completeTaskD2D2IRD_gauss, completeTaskD2D2ISD_gauss, temp_D2D2Offloading_gauss,temp_IRD_DTS2,temp_ISD_DTS2 = self.D2DOffloading(
 					matchList_gauss_D2D2, self.task_D2D2_gauss, systemTime, numberOffailureTask_gauss,
 					numberTasksCanceledAndConcludedD2D2_gauss, IIoT, completeTaskD2D2IRD_gauss, completeTaskD2D2ISD_gauss,
 					remainD2Dlink_2_IRD_gauss, D2Dlink_2_IRD_already_gauss)
@@ -802,6 +824,7 @@ class SimulationEXE():
 			if len(answerOfwinISD_DUCB) == 0:
 				print('no winner D2D1_DUCB')
 				temp_IRD_UCB1 = []
+				temp_ISD_UCB1 = []
 				regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + 1
 				utilityOfIBD_D2D1_DUCB[systemTime] = utilityOfIBD_D2D1_DUCB[systemTime - 1]
 				utilityOfIRD_D2D1_DUCB[systemTime] = utilityOfIRD_D2D1_DUCB[systemTime - 1]
@@ -834,7 +857,7 @@ class SimulationEXE():
 				utilityOfIRD_D2D1_DUCB[systemTime] = utilityOfIRD_D2D1_DUCB[systemTime - 1] + temp_U_D2D2R
 				utilityOfISD_D2D1_DUCB[systemTime] = utilityOfISD_D2D1_DUCB[systemTime - 1] + temp_U_D2D2S
 
-				numberOffailureTask_DUCB, numberTasksCanceledAndConcludedD2D1_DUCB, completeTaskD2DIRD_DUCB, completeTaskD2DISD_DUCB, temp_D2D1Offloading_DUCB,temp_IRD_UCB1 = self.D2DOffloading(
+				numberOffailureTask_DUCB, numberTasksCanceledAndConcludedD2D1_DUCB, completeTaskD2DIRD_DUCB, completeTaskD2DISD_DUCB, temp_D2D1Offloading_DUCB,temp_IRD_UCB1,temp_ISD_UCB1 = self.D2DOffloading(
 						matchList_DUCB, self.task_D2D1_DUCB, systemTime, numberOffailureTask_DUCB,
 						numberTasksCanceledAndConcludedD2D1_DUCB, IIoT, completeTaskD2DIRD_DUCB,
 						completeTaskD2DISD_DUCB,
@@ -853,6 +876,7 @@ class SimulationEXE():
 			if len(answerOfwinISD_DUCB_D2D2) == 0:
 				print('no winner D2D2_DUCB')
 				temp_IRD_UCB2 = []
+				temp_ISD_UCB2 = []
 				regretSumOfDUCB_D2D2[systemTime] = regretSumOfDUCB_D2D2[systemTime - 1] + 1
 				utilityOfIBD_D2D2_DUCB[systemTime] = utilityOfIBD_D2D2_DUCB[systemTime - 1]
 				utilityOfIRD_D2D2_DUCB[systemTime] = utilityOfIRD_D2D2_DUCB[systemTime - 1]
@@ -889,7 +913,7 @@ class SimulationEXE():
 				utilityOfIRD_D2D2_DUCB[systemTime] = utilityOfIRD_D2D2_DUCB[systemTime - 1] + temp_U_D2D2R
 				utilityOfISD_D2D2_DUCB[systemTime] = utilityOfISD_D2D2_DUCB[systemTime - 1] + temp_U_D2D2S
 
-				numberOffailureTask_DUCB, numberTasksCanceledAndConcludedD2D2_DUCB, completeTaskD2D2IRD_DUCB, completeTaskD2D2ISD_DUCB, temp_D2D2Offloading_DUCB,temp_IRD_UCB2 = self.D2DOffloading(
+				numberOffailureTask_DUCB, numberTasksCanceledAndConcludedD2D2_DUCB, completeTaskD2D2IRD_DUCB, completeTaskD2D2ISD_DUCB, temp_D2D2Offloading_DUCB,temp_IRD_UCB2,temp_ISD_UCB2 = self.D2DOffloading(
 						matchList_DUCB_D2D2, self.task_D2D2_DUCB, systemTime, numberOffailureTask_DUCB,
 						numberTasksCanceledAndConcludedD2D2_DUCB, IIoT, completeTaskD2D2IRD_DUCB,
 						completeTaskD2D2ISD_DUCB,
@@ -977,8 +1001,92 @@ class SimulationEXE():
 			print(UCB, UCBTaskThroughput2[systemTime])
 			temp_time2 = temp_time
 
+			#fairness
+			temp_fair = 0
+			temp_fair2 = 0
+			for i in temp_ISD1:
+				temp_fair += DR[i]
+				temp_fair2 += (DR[i] ** 2)
+			for i in temp_ISD2:
+				temp_fair += DR2[i]
+				temp_fair2 += (DR2[i] ** 2)
+			if temp_fair == 0 or (len(temp_ISD1) + len(temp_ISD2)) == 0:
+			 	proFair[systemTime] = 0
+			else:
+				proFair[systemTime] = (temp_fair ** 2) / ((len(temp_ISD1) + len(temp_ISD2)) * temp_fair2)
+			temp_fair_DTS = 0
+			temp_fair_DTS2 = 0
+			for i in temp_ISD_DTS1:
+				temp_fair_DTS += DR[i]
+				temp_fair_DTS2 += (DR[i] ** 2)
+			for i in temp_ISD_DTS2:
+				temp_fair_DTS += DR2[i]
+				temp_fair_DTS2 += (DR2[i] ** 2)
+			if temp_fair_DTS == 0 or (len(temp_ISD_DTS1) + len(temp_ISD_DTS2)) == 0:
+			 	DTSFair[systemTime] = 0
+			else:
+				DTSFair[systemTime] = (temp_fair_DTS ** 2) / ((len(temp_ISD_DTS1) + len(temp_ISD_DTS2)) * temp_fair_DTS2)
+			temp_fair_UCB = 0
+			temp_fair_UCB2 = 0
+			for i in temp_ISD_UCB1:
+				temp_fair_UCB += DR[i]
+				temp_fair_UCB2 += (DR[i] ** 2)
+			for i in temp_ISD_UCB2:
+				temp_fair_UCB += DR2[i]
+				temp_fair_UCB2 += (DR2[i] ** 2)
+			if temp_fair_UCB == 0 or (len(temp_ISD_UCB1) + len(temp_ISD_UCB2)) == 0:
+			 	UCBFair[systemTime] = 0
+			else:
+				UCBFair[systemTime] = (temp_fair_UCB ** 2) / ((len(temp_ISD_UCB1) + len(temp_ISD_UCB2)) * temp_fair_UCB2)
 
 			# Outage prob
+			temp_SNR = 0
+			for i in temp_ISD1:
+				temp_SNR += SNR1[i]
+				# if SNR1[i] < 13:
+				# 	ProCount += 1
+			for i in temp_ISD2:
+				temp_SNR += SNR2[i]
+			#ProTotalCount += (len(temp_ISD1) + len(temp_ISD2))
+			if temp_SNR == 0:
+				proOut[systemTime] = 0
+			else:
+				avg_SNR = temp_SNR / (len(temp_ISD1) + len(temp_ISD2))
+				proOut[systemTime] = 1 - np.exp(-13 / avg_SNR)
+			# if ProCount == 0:
+			# 	proOut[systemTime] = proOut[systemTime - 1]
+			# else:
+			# 	proOut[systemTime] = ProCount / ProTotalCount
+			temp_SNR = 0
+			for i in temp_ISD_DTS1:
+				temp_SNR += SNR1[i]
+			for i in temp_ISD_DTS2:
+				temp_SNR += SNR2[i]
+			if temp_SNR == 0:
+				DTSOut[systemTime] = 0
+			else:
+				avg_SNR = temp_SNR / (len(temp_ISD_DTS1) + len(temp_ISD_DTS2))
+				DTSOut[systemTime] = 1 - np.exp(-13 / avg_SNR)
+			# DTSTotalCount += (len(temp_ISD_DTS1) + len(temp_ISD_DTS2))
+			# if DTSCount == 0:
+			# 	DTSOut[systemTime] = DTSOut[systemTime - 1]
+			# else:
+			# 	DTSOut[systemTime] = DTSCount / DTSTotalCount
+			temp_SNR = 0
+			for i in temp_ISD_UCB1:
+				temp_SNR += SNR1[i]
+			for i in temp_ISD_UCB2:
+				temp_SNR += SNR2[i]
+			if temp_SNR == 0:
+				UCBOut[systemTime] = 1
+			else:
+				avg_SNR = temp_SNR / (len(temp_ISD_UCB1) + len(temp_ISD_UCB2))
+				UCBOut[systemTime] = 1 - np.exp(-13 / avg_SNR)
+			# UCBTotalCount += (len(temp_ISD_UCB1) + len(temp_ISD_UCB2))
+			# if UCBCount == 0:
+			# 	UCBOut[systemTime] = UCBOut[systemTime - 1]
+			# else:
+			# 	UCBOut[systemTime] = UCBCount / UCBTotalCount
 
 
 			coefficientEnergy = 0.1
@@ -1074,6 +1182,8 @@ class SimulationEXE():
 				# 							totalRound,3)
 				self.throughputGraph(totalRound,proTaskThroughput,DTSTaskThroughput,UCBTaskThroughput,0)
 				self.throughputGraph(totalRound, proTaskThroughput2, DTSTaskThroughput2, UCBTaskThroughput2,1)
+				self.outageProb(totalRound,proOut,DTSOut,UCBOut,0)
+				self.outageProb(totalRound,proFair,DTSFair,UCBFair,1)
 				print(tempUtility_D2D1)
 				print(tempUtility_D2D2)
 				print(tempUtility_D2D1_UCB)
@@ -1083,6 +1193,22 @@ class SimulationEXE():
 				# 							utilityOfIRD_D2D2_gauss,utilityOfIRD_D2D1_DUCB,utilityOfIRD_D2D2_DUCB, totalRound)
 				# self.utilityGraphGeneration(utilityOfISD_D2D1, utilityOfISD_D2D2, utilityOfISD_D2D1_gauss,
 				# 							utilityOfISD_D2D2_gauss, utilityOfISD_D2D1_DUCB,utilityOfISD_D2D2_DUCB,totalRound)
+
+	def outageProb(self,totalRound,proOut,DTSOut,UCBOut,type):
+		plt.grid(visible=True, axis='x')
+		plt.plot(range(totalRound), proOut, marker='d', markevery=999)
+		plt.plot(range(totalRound), DTSOut, marker='s', markevery=999)
+		plt.plot(range(totalRound), UCBOut, marker='^', markevery=999)
+		plt.legend(['Proposed', 'EXE_DTS', 'PhtBandit'])
+		plt.title('Outage Probability')
+		plt.xlabel('Iteration t')
+		plt.ylabel('실패율')
+		if type == 0:
+			plt.savefig('outage.png')
+		else:
+			plt.savefig('fairness.png')
+		plt.show()
+
 	def throughputGraph(self,totalRound,proTaskThroughput,DTSTaskThroughput,UCBTaskThroughput,type):
 
 		plt.grid(visible=True,axis='x')
@@ -1195,6 +1321,7 @@ class SimulationEXE():
 
 	def D2DOffloading(self,matchList,task,systemTime,numberOffailureTask,numberTasksCanceledAndConcludedD2D,IIoT,completeTaskD2DIRD,completeTaskD2DISD,remainD2Dlink_1_IRD,D2Dlink_1_IRD_already):
 		temp_IRD = []
+		temp_ISD = []
 		for i in range(len(matchList) - 1, -1, -1):
 			if task.verifyTaksFinish(systemTime, matchList[i][0]) == True:
 				numberTasksCanceledAndConcludedD2D += 1
@@ -1202,6 +1329,7 @@ class SimulationEXE():
 				completeTaskD2DIRD.append(matchList[i][0])
 				completeTaskD2DISD.append(matchList[i][1])
 				temp_IRD.append(matchList[i][0])
+				temp_ISD.append(matchList[i][1])
 				matchList.pop(i)
 
 			#else:
@@ -1216,7 +1344,7 @@ class SimulationEXE():
 				#print(i)
 			else:
 				print('이게맞나', i)
-		return numberOffailureTask,numberTasksCanceledAndConcludedD2D,completeTaskD2DIRD,completeTaskD2DISD,temp_D2D1Offloading,temp_IRD
+		return numberOffailureTask,numberTasksCanceledAndConcludedD2D,completeTaskD2DIRD,completeTaskD2DISD,temp_D2D1Offloading,temp_IRD,temp_ISD
 
 	def matchingIRDISD(self,win_IRD,sorting_opt_ISD,task,IIoT):
 		sortingWinIRD = dict()
@@ -1290,18 +1418,26 @@ class SimulationEXE():
 	# 	return tempReward
 
 
-	def MABanswer(self,win_ISD,com,preReward,selectCount):
+	def MABanswer(self,win_ISD,com,preReward,selectCount,systemTime):
+		if systemTime < 3000:
+			sigma = 5.0
+		# elif systemTime >= 1500 and systemTime < 3000:
+		# 	sigma = 1.0
+		# elif systemTime >= 3000 and systemTime < 4000:
+		# 	sigma = 0.2
+		else:
+			sigma = 0.05
 		if len(win_ISD) == 0:
 			print("no winner")
 		else:
 			power = 0.2
 			ISD_BW = 5
 			SNR = dict()
-			DR = np.zeros(len(win_ISD))
+			DR = dict()
 			energy = np.zeros(len(win_ISD))
 			#signal = nr.normal(0, 1, len(win_ISD))
-			channelGain = nr.normal(0, 0.05, len(win_ISD))
-			noise = nr.normal(0,0.05,len(win_ISD))
+			channelGain = nr.normal(0, sigma, len(win_ISD))
+			noise = nr.normal(0,sigma,len(win_ISD))
 			#noise = self.awgn(signal)
 			temp_importance = []
 			# for index, (key, value) in enumerate(win_ISD.items()):
@@ -1314,8 +1450,8 @@ class SimulationEXE():
 			i=0
 			for index in win_ISD:
 				SNR.setdefault(index,((channelGain[i] ** 2) * power) / (noise[i] ** 2)) #= ((channelGain[i] ** 2) * power) / (noise[i] ** 2)
-				DR[i] = ISD_BW * np.log2(1 + SNR)
-				energy[i] = power / DR[i]
+				DR.setdefault(index, ISD_BW * np.log2(1 + SNR[index]))
+				energy[i] = power / DR[index]
 				reward = com[index] / energy[i]
 				#win_ISD[index]['importance'] = reward
 				temp_importance.append(reward)
@@ -1349,7 +1485,7 @@ class SimulationEXE():
 						#reward = 1 / (1 + math.exp(-reward))
 					preReward[index] = reward
 				else:
-					reward = 0.5 * ((1 / DR[j]) + (1 / com[index])) + 0.5 * energy[j]
+					reward = 0.5 * ((1 / DR[index]) + (1 / com[index])) + 0.5 * energy[j]
 					if selectCount[index] != 0:
 						print('으라야',preReward[index])
 						print(selectCount[index])
@@ -1361,7 +1497,8 @@ class SimulationEXE():
 
 
 
-			return importance,DR,energy,tempReward,preReward,SNR
+			return importance,DR,energy,tempReward,preReward,SNR,noise
+
 		return False
 
 	def sigmoid(self,x,win_ISD):
