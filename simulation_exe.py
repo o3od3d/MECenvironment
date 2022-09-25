@@ -687,9 +687,10 @@ class SimulationEXE():
 					matchList_pro = self.matchingIRDISD(win_IRD, sorting_opt_ISD, self.task_D2D1, IIoT)
 					print('야',matchList_pro)
 					print(answerOfwinISD)
-					for i in range(len(matchList_pro)):
-						if answerOfwinISD[matchList_pro[i][1]]['importance'] <= 0 or answerOfwinISD[matchList_pro[i][1]]['mabResult'] <= 0:
-							matchList_pro.pop(i)
+					if len(matchList_pro) != 0:
+						for i in range(len(matchList_pro) -1,-1,-1):
+							if answerOfwinISD[matchList_pro[i][1]]['importance'] <= 0 or answerOfwinISD[matchList_pro[i][1]]['importance'] < 0.3 or answerOfwinISD[matchList_pro[i][1]]['mabResult'] <= 0:
+								matchList_pro.pop(i)
 					# utilityOfIBD_D2D1[systemTime], utilityOfIRD_D2D1[systemTime], utilityOfISD_D2D1[
 					# 	systemTime] = self.utilityComputation(len(matchList_pro), bid_price, ask_price, self.win_ISD, win_IRD)
 					temp_U_D2D1R, temp_U_D2D1S, temp_U_D2D1B = self.utilityComputation(len(matchList_pro), bid_price, ask_price, self.win_ISD, win_IRD)
@@ -727,9 +728,10 @@ class SimulationEXE():
 
 					sorting_opt_ISD_D2D2 = dict(sorted(answerOfwinISD_D2D2.items(), key=lambda x: x[1]['mabResult'], reverse=True))
 					matchList_pro_D2D2 = self.matchingIRDISD(win_IRD_D2D2, sorting_opt_ISD_D2D2, self.task_D2D2, IIoT)
-					for i in range(len(matchList_pro_D2D2)):
-						if answerOfwinISD_D2D2[matchList_pro_D2D2[i][1]]['importance'] <= 0 or answerOfwinISD_D2D2[matchList_pro_D2D2[i][1]]['mabResult'] <= 0:
-							matchList_pro_D2D2.pop(i)
+					if len(matchList_pro_D2D2) != 0:
+						for i in range(len(matchList_pro_D2D2) -1,-1,-1):
+							if answerOfwinISD_D2D2[matchList_pro_D2D2[i][1]]['importance'] <= 0 or answerOfwinISD_D2D2[matchList_pro_D2D2[i][1]]['importance'] < 0.3 or answerOfwinISD_D2D2[key]['mabResult'] <= 0:
+								matchList_pro_D2D2.pop(i)
 					# utilityOfIBD_D2D2[systemTime], utilityOfIRD_D2D2[systemTime], utilityOfISD_D2D2[
 					# 	systemTime] = self.utilityComputation(len(matchList_pro_D2D2), bid_price_D2D2, ask_price_D2D2,
 					# 										  win_ISD_D2D2, win_IRD_D2D2)
@@ -767,9 +769,10 @@ class SimulationEXE():
 					sorting_opt_ISD_Gauss = dict(sorted(answerOfwinISD_gaussian.items(), key=lambda x: x[1]['mabResult'],reverse=True))
 
 					matchList_gauss = self.matchingIRDISD(win_IRD,sorting_opt_ISD_Gauss, self.task_D2D1_gauss, IIoT)#win_IRD_noDouble, sorting_opt_ISD_Gauss, self.task_D2D1_gauss, IIoT)
-					for i in range(len(matchList_gauss)):
-						if answerOfwinISD_gaussian[matchList_gauss[i][1]]['importance'] <= 0 or answerOfwinISD_gaussian[matchList_gauss[i][1]]['mabResult'] <=0 :
-							matchList_gauss.pop(i)
+					if len(matchList_gauss) != 0:
+						for i in range(len(matchList_gauss)-1,-1,-1):
+							if answerOfwinISD_gaussian[matchList_gauss[i][1]]['importance'] <= 0 or answerOfwinISD_gaussian[matchList_gauss[i][1]]['importance'] < 0.3 or answerOfwinISD_gaussian[key]['mabResult'] <= 0:
+								matchList_gauss.pop(i)
 					utilityOfIBD_D2D1_gauss[systemTime], utilityOfIRD_D2D1_gauss[systemTime], utilityOfISD_D2D1_gauss[
 					systemTime] = self.utilityComputation(len(matchList_gauss), bid_price, ask_price, self.win_ISD, win_IRD)
 														  #bid_price_noDouble, ask_price_noDouble,
@@ -806,9 +809,10 @@ class SimulationEXE():
 
 					matchList_gauss_D2D2 = self.matchingIRDISD(win_IRD_D2D2, sorting_opt_ISD_Gauss_D2D2, self.task_D2D2_gauss,
 														  IIoT)#win_IRD_noDouble_D2D2, sorting_opt_ISD_Gauss_D2D2, self.task_D2D2_gauss,IIoT)
-					for i in range(len(matchList_gauss_D2D2)):
-						if answerOfwinISD_gaussian_D2D2[matchList_gauss_D2D2[i][1]]['importance'] <= 0 or answerOfwinISD_gaussian_D2D2[matchList_gauss_D2D2[i][1]]['mabResult'] <= 0:
-							matchList_gauss_D2D2.pop(i)
+					if len(matchList_gauss_D2D2) != 0:
+						for i in range(len(matchList_gauss_D2D2)-1,-1,-1):
+							if answerOfwinISD_gaussian_D2D2[matchList_gauss_D2D2[i][1]]['importance'] <= 0 or answerOfwinISD_gaussian_D2D2[matchList_gauss_D2D2[i][1]]['importance'] < 0.3 or answerOfwinISD_gaussian_D2D2[key]['mabResult'] <= 0:
+								matchList_gauss_D2D2.pop(i)
 					utilityOfIBD_D2D2_gauss[systemTime], utilityOfIRD_D2D2_gauss[systemTime], utilityOfISD_D2D2_gauss[
 						systemTime] = self.utilityComputation(len(matchList_gauss_D2D2), bid_price_D2D2,ask_price_D2D2,win_ISD_D2D2,win_IRD_D2D2)#bid_price_noDouble_D2D2, ask_price_noDouble_D2D2,
 															  #win_ISD_noDouble_D2D2, win_IRD_noDouble_D2D2)
@@ -851,9 +855,10 @@ class SimulationEXE():
 							sorted(answerOfwinISD_DUCB.items(), key=lambda x: x[1]['mabResult'], reverse=True))
 					matchList_DUCB = self.matchingIRDISD(win_IRD_noDouble, sorting_opt_ISD_DUCB, self.task_D2D1_DUCB,
 															  IIoT)
-					for i in range(len(matchList_DUCB)):
-						if answerOfwinISD_DUCB[matchList_DUCB[i][1]]['importance'] <= 0:
-							matchList_DUCB.pop(i)
+					if len(matchList_DUCB) != 0:
+						for i in range(len(matchList_DUCB)-1,-1,-1):
+							if answerOfwinISD_DUCB[matchList_DUCB[i][1]]['importance'] <= 0 or answerOfwinISD_DUCB[matchList_DUCB[i][1]]['importance'] < 0.3 or answerOfwinISD_DUCB[key]['mabResult'] <= 0:
+								matchList_DUCB.pop(i)
 					# utilityOfIBD_D2D1_DUCB[systemTime], utilityOfIRD_D2D1_DUCB[systemTime], utilityOfISD_D2D1_DUCB[
 					# 		systemTime] = self.utilityComputation(len(matchList_DUCB), bid_price_noDouble,
 					# 											  ask_price_noDouble,
@@ -907,9 +912,10 @@ class SimulationEXE():
 					matchList_DUCB_D2D2 = self.matchingIRDISD(win_IRD_noDouble_D2D2, sorting_opt_ISD_DUCB_D2D2,
 																   self.task_D2D2_DUCB,
 																   IIoT)
-					for i in range(len(matchList_DUCB_D2D2)):
-						if answerOfwinISD_DUCB_D2D2[matchList_DUCB_D2D2[i][1]]['importance'] <= 0:
-							matchList_DUCB_D2D2.pop(i)
+					if len(matchList_DUCB_D2D2) != 0:
+						for i in range(len(matchList_DUCB_D2D2)-1,-1,-1):
+							if answerOfwinISD_DUCB_D2D2[matchList_DUCB_D2D2[i][1]]['importance'] <= 0 or answerOfwinISD_DUCB_D2D2[matchList_DUCB_D2D2[i][1]]['importance'] < 0.3 or answerOfwinISD_DUCB_D2D2[key]['mabResult'] <= 0:
+								matchList_DUCB_D2D2.pop(i)
 					# utilityOfIBD_D2D2_DUCB[systemTime], utilityOfIRD_D2D2_DUCB[systemTime], utilityOfISD_D2D2_DUCB[
 					# 		systemTime] = self.utilityComputation(len(matchList_DUCB_D2D2), bid_price_noDouble_D2D2,
 					# 											  ask_price_noDouble_D2D2,
@@ -998,7 +1004,7 @@ class SimulationEXE():
 					Pro += self.task_D2D2.getEntryDataSize()[i]
 					Pro1 += self.task_D2D2.getEntryDataSize()[i]
 
-				proTaskThroughput[sk][systemTime] = (mec + Pro1) / temp_time
+				proTaskThroughput[sk][systemTime] = Pro1 / temp_time
 				proTaskThroughput2[sk][systemTime] = ((proTaskThroughput2[sk][systemTime - 1] * (systemTime - 1)) + ((mec + Pro) / (temp_time - temp_time2))) /2
 				print(Pro,proTaskThroughput2[sk][systemTime])
 				print(systemTime,temp_time,temp_time2,temp_time - temp_time2)
@@ -1010,7 +1016,7 @@ class SimulationEXE():
 					UCB += self.task_D2D2_DUCB.getEntryDataSize()[i]
 					UCB1 += self.task_D2D2_DUCB.getEntryDataSize()[i]
 
-				UCBTaskThroughput[sk][systemTime] = (mec + UCB1) / temp_time
+				UCBTaskThroughput[sk][systemTime] = UCB1 / temp_time
 				UCBTaskThroughput2[sk][systemTime] = ((UCBTaskThroughput2[sk][systemTime - 1] * (systemTime - 1)) + ((mec + UCB) / (temp_time - temp_time2)))/2
 				print(UCB, UCBTaskThroughput2[sk][systemTime])
 				# DTS Throughput
@@ -1024,7 +1030,7 @@ class SimulationEXE():
 					DTS += self.task_D2D2_gauss.getEntryDataSize()[i]
 					DTS1 += self.task_D2D2_gauss.getEntryDataSize()[i]
 
-				DTSTaskThroughput[sk][systemTime] = (mec + DTS1) / temp_time
+				DTSTaskThroughput[sk][systemTime] = DTS1 / temp_time
 				DTSTaskThroughput2[sk][systemTime] = ((DTSTaskThroughput2[sk][systemTime - 1] * (systemTime - 1)) + (
 							(mec + DTS) / (temp_time - temp_time2))) / 2
 				print(DTS, DTSTaskThroughput2[sk][systemTime])
