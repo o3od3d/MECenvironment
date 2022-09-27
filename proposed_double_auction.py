@@ -4,7 +4,7 @@ import random
 class doubleAuction():
 
     def __init__(self):
-        print("Hello double auction")
+        self.k = 1
 
     def doubleAuction(self,informationOfIRD,informationOfISD):
 

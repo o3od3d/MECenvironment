@@ -5,7 +5,7 @@ class noDoubleAuction():
     
     # double auction 제약을 만족하지 않고 경매를 진행했을 경우
     def __init__(self):
-        print("Hello no double auction")
+        self.k = 1
 
     def noDoubleAuntion(self, informationOfIRD, informationOfISD):
         self.k = 1

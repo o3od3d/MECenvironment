@@ -4,7 +4,7 @@ import numpy as np
 
 class gaussianTS():
     def __init__(self,NumberOfIoT,totalRound):
-        print("gaussian bandit start")
+
         self.total_rounds = 50
         self.count = {i: 0 for i in range(NumberOfIoT)}  # np.zeros(NumberOfIoT)
         self.sum_rewards = {i: 0 for i in range(NumberOfIoT)}  # np.zeros(NumberOfIoT)

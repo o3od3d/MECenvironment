@@ -4,8 +4,9 @@ from bandit2 import BanditTwoArmedHighLowFixed
 
 class exe_DTS():
     def __init__(self,numberOfIoT,totalRound):
-        print('exe_DTS start')
+
         self.total_rounds = 50
+
         self.count = {i: 0 for i in range(numberOfIoT)}
         self.sum_rewards = {i: 0 for i in range(numberOfIoT)}
         self.Q = {i: 0 for i in range(numberOfIoT)}

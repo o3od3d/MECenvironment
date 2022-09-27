@@ -172,7 +172,7 @@ class IIoTDevice():
 
     def verifyCPUFree(self,key):
         if self.batteryLevel[key] <= self.ISL[key]:
-            print(self.IIoTID[key],"reched battery")
+
             return False
         if self.statusCPU[key] == self.CPU_FREE:
             return True

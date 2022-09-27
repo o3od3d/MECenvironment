@@ -7,8 +7,9 @@ from sklearn.preprocessing import minmax_scale
 
 class DUCB():
     def __init__(self,NumberOfIoT,totalRound):
-        print("DUCB bandit start")
+
         self.total_rounds = 50
+
         self.count = {i: 0 for i in range(NumberOfIoT)}  # np.zeros(NumberOfIoT)
         self.sum_rewards = {i: 0 for i in range(NumberOfIoT)}  # np.zeros(NumberOfIoT)
         self.Q = {i: 0 for i in range(NumberOfIoT)}  # np.zeros(NumberOfIoT)

@@ -14,7 +14,7 @@ class Task():
         # self.returnDataSize
         # self.allocatedTask                 # whether to allocate iot,mec or cloud => 0,1,2
         # self.statusOftask                    # whether task processing has been completed => 0(deny) or 1(success) or 2(processing)
-        print('task')
+
         self.TASK_ALIVE = 1
         self.TASK_CONCLUEDE = 2
         self.TASK_CANCELLED = 3

@@ -1,7 +1,7 @@
 import math
 import random
 import copy
-
+from tqdm import tqdm
 import matplotlib
 import matplotlib.pyplot as plt
 import time
@@ -42,7 +42,6 @@ class SimulationEXE():
 		totalTaskDTS = 0
 		totalTaskUCB = 0
 		# discount factor
-		print(mp.cpu_count())
 		gamma_PDTS = 0.99
 		gamma_PDTS_D2D2 = 0.99
 		gamma_DTS = 0.99
@@ -94,7 +93,7 @@ class SimulationEXE():
 
 		completeTaskMEC = []
 		NumberOfIoT = [20,40,60,80,100]
-		totalRound = 2500
+		totalRound = 181
 
 		# taskGenerationRate = 0.1 * math.pow(10, 6)
 		# taskDataEntrySize = 4 * 8 * math.pow(10, 6)
@@ -123,17 +122,20 @@ class SimulationEXE():
 		numberOfTaskD2D1_DUCB = 0
 		numberOfTaskD2D2_DUCB = 0
 
-		proTaskThroughput = [[0.01 for j in range(totalRound)] for i in range(5)]
-		DTSTaskThroughput = [[0.01 for j in range(totalRound)] for i in range(5)]
-		UCBTaskThroughput = [[0.01 for j in range(totalRound)] for i in range(5)]
-		proTaskThroughput2 = [[0.01 for j in range(totalRound)] for i in range(5)]
-		DTSTaskThroughput2 = [[0.01 for j in range(totalRound)] for i in range(5)]
-		UCBTaskThroughput2 = [[0.01 for j in range(totalRound)] for i in range(5)]
+		proTaskThroughput = [[0.01 for j in range(totalRound)] for i in range(len(NumberOfIoT))]
+		DTSTaskThroughput = [[0.01 for j in range(totalRound)] for i in range(len(NumberOfIoT))]
+		UCBTaskThroughput = [[0.01 for j in range(totalRound)] for i in range(len(NumberOfIoT))]
+		proTaskThroughput2 = [[0.01 for j in range(totalRound)] for i in range(len(NumberOfIoT))]
+		DTSTaskThroughput2 = [[0.01 for j in range(totalRound)] for i in range(len(NumberOfIoT))]
+		UCBTaskThroughput2 = [[0.01 for j in range(totalRound)] for i in range(len(NumberOfIoT))]
 
-		proOut = np.zeros(totalRound)
-		DTSOut = np.zeros(totalRound)
-		UCBOut = np.zeros(totalRound)
+		proOut = [[0.01 for j in range(totalRound)] for i in range(len(NumberOfIoT))]
+		DTSOut = [[0.01 for j in range(totalRound)] for i in range(len(NumberOfIoT))]
+		UCBOut = [[0.01 for j in range(totalRound)] for i in range(len(NumberOfIoT))]
 
+		proOut2 = np.zeros(len(NumberOfIoT))
+		DTSOut2 = np.zeros(len(NumberOfIoT))
+		UCBOut2 = np.zeros(len(NumberOfIoT))
 		self.D2Dlink_1 = []
 		self.D2Dlink_1_IRD = []
 		self.D2Dlink_1_ISD = []
@@ -284,14 +286,19 @@ class SimulationEXE():
 		# proFair = [[0 for col in range(self.NumberOfIoT) for row in range(totalRound)]]
 		# DTSFair = [[0 for col in range(self.NumberOfIoT) for row in range(totalRound)]]
 		# UCBFair = [[0 for col in range(self.NumberOfIoT) for row in range(totalRound)]]
-		for sk in range(len(NumberOfIoT)):
+		for sk in tqdm(range(len(NumberOfIoT))):
 			start = time.time()
-			print(start)
+			temp_numberOfPro = 0
+			temp_numberOfDTS = 0
+			temp_numberOfUCB = 0
 			mec1 = 0
 			Pro1 = 0
 			DTS1 = 0
 			UCB1 = 0
 			systemTime = 0
+			temp_SNRPro = 0
+			temp_SNRDTS = 0
+			temp_SNRUCB = 0
 			self.NumberOfIoT = NumberOfIoT[sk]
 			self.proposed_DTS = proposed_DTS(self.NumberOfIoT, totalRound)
 			self.gaussianTS = gaussianTS(self.NumberOfIoT, totalRound)
@@ -302,8 +309,8 @@ class SimulationEXE():
 			presentReward = {i: 0 for i in range(self.NumberOfIoT)}
 			presentReward2 = {i: 0 for i in range(self.NumberOfIoT)}
 			selectCount = {i: 0 for i in range(self.NumberOfIoT)}
+
 			while systemTime != totalRound:
-				print('time : ',systemTime,'낄낄',time.time() - start)
 				# ---------------------------------------------------------------------------
 				#  1. Initiates simulation
 				# ---------------------------------------------------------------------------
@@ -319,11 +326,7 @@ class SimulationEXE():
 						numberOffailureTask = (len(totalRemainMEC) + len(remainD2Dlink_1_IRD) + len(remainD2Dlink_2_IRD))
 						numberOffailureTask_gauss = (len(totalRemainMEC) + len(remainD2Dlink_1_IRD_gauss) + len(remainD2Dlink_2_IRD_gauss))
 						numberOffailureTask_DUCB = (len(totalRemainMEC) + len(remainD2Dlink_1_IRD_DUCB) + len(remainD2Dlink_2_IRD_DUCB))
-						print('남은작업', len(totalRemainMEC), totalRemainMEC)
-						print('남은작업', len(remainD2Dlink_1_IRD_gauss), remainD2Dlink_1_IRD_gauss)
-						print('남은작업', len(remainD2Dlink_2_IRD_gauss), remainD2Dlink_2_IRD_gauss)
-						print('남은작업', len(remainD2Dlink_1_IRD_DUCB), remainD2Dlink_1_IRD_DUCB)
-						print('남은작업', len(remainD2Dlink_2_IRD_DUCB), remainD2Dlink_2_IRD_DUCB)
+
 						self.D2Dlink_1 = []
 						self.D2Dlink_1_IRD = []
 						self.D2Dlink_1_ISD = []
@@ -398,8 +401,7 @@ class SimulationEXE():
 					answerOfISD,DR,energy,tempReward,presentReward,SNR1,noise1 = self.MABanswer(D2Dlink_1_ISD_already,self.service_D2D1.getCompLoad(),presentReward,selectCount,systemTime)
 
 					answerOfISD_D2D2,DR2,energy2,tempReward2,presentReward2,SNR2,noise2 = self.MABanswer(D2Dlink_2_ISD_already,self.service_D2D2.getCompLoad(),presentReward2,selectCount,systemTime)
-					print('신호',SNR1)
-					print(SNR2)
+
 
 					# answerOfISD_gaussian = self.MABanswer()
 					# answerOfISD_gaussian_D2D2 =
@@ -503,7 +505,7 @@ class SimulationEXE():
 					self.task_D2D2_gauss.setPolicy(1, D2Dlink_2_IRD_already_gauss)
 					self.task_D2D1_DUCB.setPolicy(1, D2Dlink_1_IRD_already_DUCB)
 					self.task_D2D2_DUCB.setPolicy(1, D2Dlink_2_IRD_already_DUCB)
-					print("나머지 작업 처리")
+
 					self.service_D2D1.Service(D2Dlink_1_ISD_already, remainAsk_D2D1, remainStauts_D2D1_ISD,
 											  remainD2Dlink_1_ISD, remainDeadlined2d1, systemTime, computationCapD2D1,
 											  remainDataSizeD2D1, self.task_D2D1.getReturnDataSize())
@@ -640,10 +642,10 @@ class SimulationEXE():
 
 				self.temp_doubleAuction_D2D1 = doubleAuction()
 				win_IRD, self.win_ISD, bid_price, ask_price, K, remainingIRD = self.temp_doubleAuction_D2D1.doubleAuction(D2D1_doubleauction_IRDcandidate,D2D1_doubleauction_ISDcandidate)
-				print('가격',bid_price,ask_price)
+
 				self.temp_doubleAuction_D2D2 = doubleAuction()
 				win_IRD_D2D2, win_ISD_D2D2, bid_price_D2D2, ask_price_D2D2, K_D2D2, remainingIRD_D2D2 = self.temp_doubleAuction_D2D2.doubleAuction(D2D2_doubleauction_IRDcandidate,D2D2_doubleauction_ISDcandidate)
-				print('가격2',bid_price_D2D2,ask_price_D2D2)
+
 				# ---------------------------------------------------------------------------
 				# 3-1. Non Double Auction is started
 				# ---------------------------------------------------------------------------
@@ -651,7 +653,7 @@ class SimulationEXE():
 				# D2D 1
 				self.temp_noDoubleAuction = noDoubleAuction()
 				win_IRD_noDouble, self.win_ISD_noDouble, bid_price_noDouble, ask_price_noDouble, K_noDouble, remainingIRD_noDouble = self.temp_noDoubleAuction.noDoubleAuntion(D2D1_doubleauction_IRDcandidate,D2D1_doubleauction_ISDcandidate)
-				print('가격3',bid_price_noDouble,ask_price_noDouble)
+
 
 				# D2D 2
 				self.temp_noDoubleAuction_D2D2 = noDoubleAuction()
@@ -668,7 +670,6 @@ class SimulationEXE():
 					answerOfwinISD[key]['importance'] = answerOfISD[key]
 
 				if len(answerOfwinISD) == 0:
-					print('no winner D2D1_P')
 					temp_IRD1 = []
 					temp_ISD1 = []
 					regretSumOfPDTS[systemTime] = regretSumOfPDTS[systemTime - 1] + 1
@@ -685,11 +686,14 @@ class SimulationEXE():
 
 					sorting_opt_ISD = dict(sorted(answerOfwinISD.items(), key=lambda x: x[1]['mabResult'],reverse=True))
 					matchList_pro = self.matchingIRDISD(win_IRD, sorting_opt_ISD, self.task_D2D1, IIoT)
-					print('야',matchList_pro)
-					print(answerOfwinISD)
+
 					if len(matchList_pro) != 0:
 						for i in range(len(matchList_pro) -1,-1,-1):
-							if answerOfwinISD[matchList_pro[i][1]]['importance'] <= 0 or answerOfwinISD[matchList_pro[i][1]]['importance'] < 0.3 or answerOfwinISD[matchList_pro[i][1]]['mabResult'] <= 0:
+							if abs(answerOfwinISD[matchList_pro[i][1]]['importance'] -
+								   answerOfwinISD[matchList_pro[i][1]]['mabResult']) >= 0.4 or \
+									answerOfwinISD[matchList_pro[i][1]]['importance'] <= 0.3 or \
+									answerOfwinISD[matchList_pro[i][1]]['importance'] <= 0 or \
+									answerOfwinISD[matchList_pro[i][1]]['mabResult'] <= 0:
 								matchList_pro.pop(i)
 					# utilityOfIBD_D2D1[systemTime], utilityOfIRD_D2D1[systemTime], utilityOfISD_D2D1[
 					# 	systemTime] = self.utilityComputation(len(matchList_pro), bid_price, ask_price, self.win_ISD, win_IRD)
@@ -711,7 +715,7 @@ class SimulationEXE():
 
 				#answerOfwinISD_D2D2 = self.MABanswer(win_ISD_D2D2)
 				if len(answerOfwinISD_D2D2) == 0:
-					print('no winner D2D2_P')
+
 					temp_IRD2 = []
 					temp_ISD2 = []
 					regretSumOfPDTS_D2D2[systemTime] = regretSumOfPDTS_D2D2[systemTime - 1] + 1
@@ -730,7 +734,11 @@ class SimulationEXE():
 					matchList_pro_D2D2 = self.matchingIRDISD(win_IRD_D2D2, sorting_opt_ISD_D2D2, self.task_D2D2, IIoT)
 					if len(matchList_pro_D2D2) != 0:
 						for i in range(len(matchList_pro_D2D2) -1,-1,-1):
-							if answerOfwinISD_D2D2[matchList_pro_D2D2[i][1]]['importance'] <= 0 or answerOfwinISD_D2D2[matchList_pro_D2D2[i][1]]['importance'] < 0.3 or answerOfwinISD_D2D2[key]['mabResult'] <= 0:
+							if abs(answerOfwinISD_D2D2[matchList_pro_D2D2[i][1]]['importance'] -
+								   answerOfwinISD_D2D2[matchList_pro_D2D2[i][1]]['mabResult']) >= 0.4 or \
+									answerOfwinISD_D2D2[matchList_pro_D2D2[i][1]]['importance'] <= 0.3 or \
+									answerOfwinISD_D2D2[matchList_pro_D2D2[i][1]]['importance'] <= 0 or \
+									answerOfwinISD_D2D2[key]['mabResult'] <= 0:
 								matchList_pro_D2D2.pop(i)
 					# utilityOfIBD_D2D2[systemTime], utilityOfIRD_D2D2[systemTime], utilityOfISD_D2D2[
 					# 	systemTime] = self.utilityComputation(len(matchList_pro_D2D2), bid_price_D2D2, ask_price_D2D2,
@@ -755,7 +763,7 @@ class SimulationEXE():
 
 				#answerOfwinISD_gaussian = self.MABanswer(self.win_ISD_noDouble)
 				if len(answerOfwinISD_gaussian) == 0:
-					print('no winner D2D1_GA')
+
 					temp_IRD_DTS1 = []
 					temp_ISD_DTS1 = []
 					regretSumOfGauss[systemTime] = regretSumOfGauss[systemTime - 1] + 1
@@ -771,7 +779,11 @@ class SimulationEXE():
 					matchList_gauss = self.matchingIRDISD(win_IRD,sorting_opt_ISD_Gauss, self.task_D2D1_gauss, IIoT)#win_IRD_noDouble, sorting_opt_ISD_Gauss, self.task_D2D1_gauss, IIoT)
 					if len(matchList_gauss) != 0:
 						for i in range(len(matchList_gauss)-1,-1,-1):
-							if answerOfwinISD_gaussian[matchList_gauss[i][1]]['importance'] <= 0 or answerOfwinISD_gaussian[matchList_gauss[i][1]]['importance'] < 0.3 or answerOfwinISD_gaussian[key]['mabResult'] <= 0:
+							if abs(answerOfwinISD_gaussian[matchList_gauss[i][1]]['importance'] -
+								   answerOfwinISD_gaussian[matchList_gauss[i][1]]['mabResult']) >= 0.4 \
+									or answerOfwinISD_gaussian[matchList_gauss[i][1]]['importance'] <= 0.3 or \
+									answerOfwinISD_gaussian[matchList_gauss[i][1]]['importance'] <= 0 or \
+									answerOfwinISD_gaussian[key]['mabResult'] <= 0:
 								matchList_gauss.pop(i)
 					utilityOfIBD_D2D1_gauss[systemTime], utilityOfIRD_D2D1_gauss[systemTime], utilityOfISD_D2D1_gauss[
 					systemTime] = self.utilityComputation(len(matchList_gauss), bid_price, ask_price, self.win_ISD, win_IRD)
@@ -790,7 +802,7 @@ class SimulationEXE():
 
 				#answerOfwinISD_gaussian_D2D2 = self.MABanswer(win_ISD_noDouble_D2D2)
 				if len(answerOfwinISD_gaussian_D2D2) == 0:
-					print('no winner D2D2_GA')
+
 					temp_IRD_DTS2 = []
 					temp_ISD_DTS2 = []
 					regretSumOfGauss_D2D2[systemTime] = regretSumOfGauss_D2D2[systemTime - 1] + 1
@@ -811,7 +823,11 @@ class SimulationEXE():
 														  IIoT)#win_IRD_noDouble_D2D2, sorting_opt_ISD_Gauss_D2D2, self.task_D2D2_gauss,IIoT)
 					if len(matchList_gauss_D2D2) != 0:
 						for i in range(len(matchList_gauss_D2D2)-1,-1,-1):
-							if answerOfwinISD_gaussian_D2D2[matchList_gauss_D2D2[i][1]]['importance'] <= 0 or answerOfwinISD_gaussian_D2D2[matchList_gauss_D2D2[i][1]]['importance'] < 0.3 or answerOfwinISD_gaussian_D2D2[key]['mabResult'] <= 0:
+							if abs(answerOfwinISD_gaussian_D2D2[matchList_gauss_D2D2[i][1]]['importance'] -
+								   answerOfwinISD_gaussian_D2D2[matchList_gauss_D2D2[i][1]]['mabResult']) >= 0.4 or \
+									answerOfwinISD_gaussian_D2D2[matchList_gauss_D2D2[i][1]]['importance'] <= 0.3 or \
+									answerOfwinISD_gaussian_D2D2[matchList_gauss_D2D2[i][1]]['importance'] <= 0 or \
+									answerOfwinISD_gaussian_D2D2[key]['mabResult'] <= 0:
 								matchList_gauss_D2D2.pop(i)
 					utilityOfIBD_D2D2_gauss[systemTime], utilityOfIRD_D2D2_gauss[systemTime], utilityOfISD_D2D2_gauss[
 						systemTime] = self.utilityComputation(len(matchList_gauss_D2D2), bid_price_D2D2,ask_price_D2D2,win_ISD_D2D2,win_IRD_D2D2)#bid_price_noDouble_D2D2, ask_price_noDouble_D2D2,
@@ -827,15 +843,15 @@ class SimulationEXE():
 				# 4-1. Multi-Armed Bandit(DUCB) is started
 				# ---------------------------------------------------------------------------
 				# D2D 1
-				answerOfwinISD_DUCB = self.win_ISD_noDouble
-				for key, value in list(self.win_ISD_noDouble.items()):
+				answerOfwinISD_DUCB = self.win_ISD
+				for key, value in list(self.win_ISD.items()):
 					answerOfwinISD_DUCB[key]['importance'] = presentReward[key]
 					answerOfwinISD_DUCB[key]['reward'] = tempReward[key]
 					#answerOfwinISD_DUCB[key]['importance'] = answerOfISD[key]
 
 				#answerOfwinISD_DUCB = self.MABanswer(self.win_ISD_noDouble)
 				if len(answerOfwinISD_DUCB) == 0:
-					print('no winner D2D1_DUCB')
+
 					temp_IRD_UCB1 = []
 					temp_ISD_UCB1 = []
 					regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + 1
@@ -848,16 +864,20 @@ class SimulationEXE():
 					opt_ISD_DUCB = self.DUCB.discounted_UCB(answerOfwinISD_DUCB, gamma_DUCB,systemTime,self.subSystemTime)
 
 					regretSumOfDUCB[systemTime] = regretSumOfDUCB[systemTime - 1] + self.regret_analysis(
-						self.win_ISD_noDouble, opt_ISD_DUCB,1)
+						self.win_ISD, opt_ISD_DUCB,1)
 					for index, (key, value) in enumerate(answerOfwinISD_DUCB.items()):
 						answerOfwinISD_DUCB[key]['mabResult'] = opt_ISD_DUCB[key]
 					sorting_opt_ISD_DUCB = dict(
 							sorted(answerOfwinISD_DUCB.items(), key=lambda x: x[1]['mabResult'], reverse=True))
-					matchList_DUCB = self.matchingIRDISD(win_IRD_noDouble, sorting_opt_ISD_DUCB, self.task_D2D1_DUCB,
+					matchList_DUCB = self.matchingIRDISD(win_IRD, sorting_opt_ISD_DUCB, self.task_D2D1_DUCB,
 															  IIoT)
 					if len(matchList_DUCB) != 0:
 						for i in range(len(matchList_DUCB)-1,-1,-1):
-							if answerOfwinISD_DUCB[matchList_DUCB[i][1]]['importance'] <= 0 or answerOfwinISD_DUCB[matchList_DUCB[i][1]]['importance'] < 0.3 or answerOfwinISD_DUCB[key]['mabResult'] <= 0:
+							if abs(answerOfwinISD_DUCB[matchList_DUCB[i][1]]['importance'] -
+									   answerOfwinISD_DUCB[matchList_DUCB[i][1]]['mabResult']) >= 0.4 or \
+										answerOfwinISD_DUCB[matchList_DUCB[i][1]]['importance'] <= 0.3 or \
+										answerOfwinISD_DUCB[matchList_DUCB[i][1]]['importance'] <= 0 or \
+										answerOfwinISD_DUCB[matchList_DUCB[i][1]]['mabResult'] <= 0:
 								matchList_DUCB.pop(i)
 					# utilityOfIBD_D2D1_DUCB[systemTime], utilityOfIRD_D2D1_DUCB[systemTime], utilityOfISD_D2D1_DUCB[
 					# 		systemTime] = self.utilityComputation(len(matchList_DUCB), bid_price_noDouble,
@@ -865,7 +885,7 @@ class SimulationEXE():
 					# 											  self.win_ISD_noDouble, win_IRD_noDouble)
 					temp_U_D2D2R, temp_U_D2D2S, temp_U_D2D2B = self.utilityComputation(len(matchList_DUCB), bid_price_noDouble,
 																  ask_price_noDouble,
-																  self.win_ISD_noDouble, win_IRD_noDouble)
+																  self.win_ISD, win_IRD)
 
 					utilityOfIBD_D2D1_DUCB[systemTime] = utilityOfIBD_D2D1_DUCB[systemTime - 1] + temp_U_D2D2B
 					utilityOfIRD_D2D1_DUCB[systemTime] = utilityOfIRD_D2D1_DUCB[systemTime - 1] + temp_U_D2D2R
@@ -878,8 +898,8 @@ class SimulationEXE():
 							remainD2Dlink_1_IRD_DUCB, D2Dlink_1_IRD_already_DUCB)
 
 				# D2D 2
-				answerOfwinISD_DUCB_D2D2 = win_ISD_noDouble_D2D2
-				for key, value in list(win_ISD_noDouble_D2D2.items()):
+				answerOfwinISD_DUCB_D2D2 = win_ISD_D2D2
+				for key, value in list(win_ISD_D2D2.items()):
 					answerOfwinISD_DUCB_D2D2[key]['importance'] = presentReward2[key]
 					answerOfwinISD_DUCB_D2D2[key]['reward'] = tempReward2[key]
 					#answerOfwinISD_DUCB_D2D2[key]['importance'] = answerOfISD_D2D2[key]
@@ -888,7 +908,7 @@ class SimulationEXE():
 
 				#answerOfwinISD_DUCB_D2D2 = self.MABanswer(win_ISD_noDouble_D2D2)
 				if len(answerOfwinISD_DUCB_D2D2) == 0:
-					print('no winner D2D2_DUCB')
+
 					temp_IRD_UCB2 = []
 					temp_ISD_UCB2 = []
 					regretSumOfDUCB_D2D2[systemTime] = regretSumOfDUCB_D2D2[systemTime - 1] + 1
@@ -902,19 +922,23 @@ class SimulationEXE():
 
 
 					regretSumOfDUCB_D2D2[systemTime] = regretSumOfDUCB_D2D2[systemTime - 1] + self.regret_analysis(
-						win_ISD_noDouble_D2D2, opt_ISD_DUCB_D2D2,1)
+						win_ISD_D2D2, opt_ISD_DUCB_D2D2,1)
 
 					for index, (key, value) in enumerate(answerOfwinISD_DUCB_D2D2.items()):
 						answerOfwinISD_DUCB_D2D2[key]['mabResult'] = opt_ISD_DUCB_D2D2[key]
 					sorting_opt_ISD_DUCB_D2D2 = dict(
 							sorted(answerOfwinISD_DUCB_D2D2.items(), key=lambda x: x[1]['mabResult'], reverse=True))
 
-					matchList_DUCB_D2D2 = self.matchingIRDISD(win_IRD_noDouble_D2D2, sorting_opt_ISD_DUCB_D2D2,
+					matchList_DUCB_D2D2 = self.matchingIRDISD(win_IRD_D2D2, sorting_opt_ISD_DUCB_D2D2,
 																   self.task_D2D2_DUCB,
 																   IIoT)
 					if len(matchList_DUCB_D2D2) != 0:
 						for i in range(len(matchList_DUCB_D2D2)-1,-1,-1):
-							if answerOfwinISD_DUCB_D2D2[matchList_DUCB_D2D2[i][1]]['importance'] <= 0 or answerOfwinISD_DUCB_D2D2[matchList_DUCB_D2D2[i][1]]['importance'] < 0.3 or answerOfwinISD_DUCB_D2D2[key]['mabResult'] <= 0:
+							if abs(answerOfwinISD_DUCB_D2D2[matchList_DUCB_D2D2[i][1]]['importance'] -
+									   answerOfwinISD_DUCB_D2D2[matchList_DUCB_D2D2[i][1]]['mabResult']) >= 0.4 or \
+										answerOfwinISD_DUCB_D2D2[matchList_DUCB_D2D2[i][1]]['importance'] <= 0.3 or \
+										answerOfwinISD_DUCB_D2D2[matchList_DUCB_D2D2[i][1]]['importance'] <= 0 or \
+										answerOfwinISD_DUCB_D2D2[key]['mabResult'] <= 0:
 								matchList_DUCB_D2D2.pop(i)
 					# utilityOfIBD_D2D2_DUCB[systemTime], utilityOfIRD_D2D2_DUCB[systemTime], utilityOfISD_D2D2_DUCB[
 					# 		systemTime] = self.utilityComputation(len(matchList_DUCB_D2D2), bid_price_noDouble_D2D2,
@@ -922,7 +946,7 @@ class SimulationEXE():
 					# 											  win_ISD_noDouble_D2D2, win_IRD_noDouble_D2D2)
 					temp_U_D2D2R, temp_U_D2D2S, temp_U_D2D2B = self.utilityComputation(len(matchList_DUCB_D2D2), bid_price_noDouble_D2D2,
 																  ask_price_noDouble_D2D2,
-																  win_ISD_noDouble_D2D2, win_IRD_noDouble_D2D2)
+																  win_ISD_D2D2, win_IRD_D2D2)
 
 					utilityOfIBD_D2D2_DUCB[systemTime] = utilityOfIBD_D2D2_DUCB[systemTime - 1] + temp_U_D2D2B
 					utilityOfIRD_D2D2_DUCB[systemTime] = utilityOfIRD_D2D2_DUCB[systemTime - 1] + temp_U_D2D2R
@@ -990,12 +1014,11 @@ class SimulationEXE():
 				Pro = 0
 				DTS = 0
 				UCB = 0
-				print('처리량임다',temp_time)
 				#MEC Throughput
 				for i in temp_com_task:
 					mec += self.task_MEC.getEntryDataSize()[i]
 					mec1 += self.task_MEC.getEntryDataSize()[i]
-				print(mec)
+
 				#PRO Throughput
 				for i in temp_IRD1:
 					Pro += self.task_D2D1.getEntryDataSize()[i]
@@ -1005,9 +1028,8 @@ class SimulationEXE():
 					Pro1 += self.task_D2D2.getEntryDataSize()[i]
 
 				proTaskThroughput[sk][systemTime] = Pro1 / temp_time
-				proTaskThroughput2[sk][systemTime] = ((proTaskThroughput2[sk][systemTime - 1] * (systemTime - 1)) + ((mec + Pro) / (temp_time - temp_time2))) /2
-				print(Pro,proTaskThroughput2[sk][systemTime])
-				print(systemTime,temp_time,temp_time2,temp_time - temp_time2)
+				#proTaskThroughput2[sk][systemTime] = ((proTaskThroughput2[sk][systemTime - 1] * (systemTime - 1)) + ((mec + Pro) / (temp_time - temp_time2))) /2
+
 				#PhtBandit Throughput
 				for i in temp_IRD_UCB1:
 					UCB += self.task_D2D1_DUCB.getEntryDataSize()[i]
@@ -1017,8 +1039,8 @@ class SimulationEXE():
 					UCB1 += self.task_D2D2_DUCB.getEntryDataSize()[i]
 
 				UCBTaskThroughput[sk][systemTime] = UCB1 / temp_time
-				UCBTaskThroughput2[sk][systemTime] = ((UCBTaskThroughput2[sk][systemTime - 1] * (systemTime - 1)) + ((mec + UCB) / (temp_time - temp_time2)))/2
-				print(UCB, UCBTaskThroughput2[sk][systemTime])
+				#UCBTaskThroughput2[sk][systemTime] = ((UCBTaskThroughput2[sk][systemTime - 1] * (systemTime - 1)) + ((mec + UCB) / (temp_time - temp_time2)))/2
+
 				# DTS Throughput
 				temp_time = time.time() - start
 				if temp_time == 0:
@@ -1031,9 +1053,9 @@ class SimulationEXE():
 					DTS1 += self.task_D2D2_gauss.getEntryDataSize()[i]
 
 				DTSTaskThroughput[sk][systemTime] = DTS1 / temp_time
-				DTSTaskThroughput2[sk][systemTime] = ((DTSTaskThroughput2[sk][systemTime - 1] * (systemTime - 1)) + (
-							(mec + DTS) / (temp_time - temp_time2))) / 2
-				print(DTS, DTSTaskThroughput2[sk][systemTime])
+				# DTSTaskThroughput2[sk][systemTime] = ((DTSTaskThroughput2[sk][systemTime - 1] * (systemTime - 1)) + (
+				# 			(mec + DTS) / (temp_time - temp_time2))) / 2
+
 				temp_time2 = temp_time
 
 				#fairness
@@ -1076,47 +1098,77 @@ class SimulationEXE():
 
 				# Outage prob
 				temp_SNR = 0
+				tmp_snr = 0
 				for i in temp_ISD1:
 					temp_SNR += SNR1[i]
+					temp_SNRPro += SNR1[i]
 					# if SNR1[i] < 13:
 					# 	ProCount += 1
 				for i in temp_ISD2:
 					temp_SNR += SNR2[i]
-				#ProTotalCount += (len(temp_ISD1) + len(temp_ISD2))
+					temp_SNRPro += SNR2[i]
 				if temp_SNR == 0:
-					proOut[systemTime] = 0
+					proOut[sk][systemTime] = 0.7
 				else:
-					avg_SNR = temp_SNR / (len(temp_ISD1) + len(temp_ISD2))
-					proOut[systemTime] = 1 - np.exp(-13 / avg_SNR)
+					avg_SNR = temp_SNR / (len(temp_ISD1) + len(temp_ISD1))
+					# if self.NumberOfIoT == 20:
+					# 	temp_SNR = temp_SNR * 15
+
+					proOut[sk][systemTime] = 1 - np.exp(-13 / temp_SNR)
+
+					temp_numberOfUCB += (len(temp_ISD1) + len(temp_ISD1))
+				#ProTotalCount += (len(temp_ISD1) + len(temp_ISD2))
+
+					# if self.NumberOfIoT == 20:
+					# 	temp_SNR = temp_SNR * 15
+
+					#print('proOut1',systemTime,temp_SNR,avg_SNR,proOut[sk][systemTime])
 				# if ProCount == 0:
 				# 	proOut[systemTime] = proOut[systemTime - 1]
 				# else:
 				# 	proOut[systemTime] = ProCount / ProTotalCount
 				temp_SNR = 0
+				tmp_snr = 0
 				for i in temp_ISD_DTS1:
 					temp_SNR += SNR1[i]
+					temp_SNRDTS += SNR1[i]
 				for i in temp_ISD_DTS2:
 					temp_SNR += SNR2[i]
+					temp_SNRDTS += SNR2[i]
 				if temp_SNR == 0:
-					DTSOut[systemTime] = 0
+					DTSOut[sk][systemTime] = 0.7
 				else:
 					avg_SNR = temp_SNR / (len(temp_ISD_DTS1) + len(temp_ISD_DTS2))
-					DTSOut[systemTime] = 1 - np.exp(-13 / avg_SNR)
+					# if self.NumberOfIoT == 20:
+					# 	temp_SNR = temp_SNR * 15
+
+					DTSOut[sk][systemTime] = 1 - np.exp(-13 / temp_SNR)
+					temp_numberOfDTS += (len(temp_ISD_DTS1) + len(temp_ISD_DTS2))
+					#print('DTSOut',systemTime, temp_SNR, avg_SNR, DTSOut[sk][systemTime])
 				# DTSTotalCount += (len(temp_ISD_DTS1) + len(temp_ISD_DTS2))
 				# if DTSCount == 0:
 				# 	DTSOut[systemTime] = DTSOut[systemTime - 1]
 				# else:
 				# 	DTSOut[systemTime] = DTSCount / DTSTotalCount
 				temp_SNR = 0
+				tmp_snr = 0
 				for i in temp_ISD_UCB1:
 					temp_SNR += SNR1[i]
+					temp_SNRUCB = SNR1[i]
 				for i in temp_ISD_UCB2:
 					temp_SNR += SNR2[i]
+					temp_SNRUCB = SNR2[i]
 				if temp_SNR == 0:
-					UCBOut[systemTime] = 1
+					UCBOut[sk][systemTime] = 0.7
 				else:
 					avg_SNR = temp_SNR / (len(temp_ISD_UCB1) + len(temp_ISD_UCB2))
-					UCBOut[systemTime] = 1 - np.exp(-13 / avg_SNR)
+					# if self.NumberOfIoT == 20:
+					# 	temp_SNR = temp_SNR * 15
+
+					UCBOut[sk][systemTime] = 1 - np.exp(-13 / temp_SNR)
+
+					temp_numberOfUCB += (len(temp_ISD_UCB1) + len(temp_ISD_UCB2))
+					#print('UCBOut',systemTime, temp_SNR, avg_SNR, UCBOut[sk][systemTime])
 				# UCBTotalCount += (len(temp_ISD_UCB1) + len(temp_ISD_UCB2))
 				# if UCBCount == 0:
 				# 	UCBOut[systemTime] = UCBOut[systemTime - 1]
@@ -1131,31 +1183,55 @@ class SimulationEXE():
 				# Scheduler_D2D1 = scheduler_temp.sheduler(self.task_D2D1, coefficientEnergy, coefficientTime, alpha,beta,gamma,IIoT,MEC)
 				# scheduler_temp = scheduler()
 				# Scheduler_D2D2 = scheduler_temp.sheduler(self.task_D2D2, coefficientEnergy, coefficientTime, alpha, beta, gamma, IIoT,MEC)
-				print('남은작업2',)
-				print('남은작업2', D2Dlink_2_IRD_already)
-				print('남은작업2', D2Dlink_2_IRD_already)
+
 				totalTask += len(completeTaskD2DIRD) + len(completeTaskD2D2IRD)
 				totalTaskDTS += len(completeTaskD2DIRD_gauss) + len(completeTaskD2D2IRD_gauss)
 				totalTaskUCB += len(completeTaskD2DIRD_DUCB) + len(completeTaskD2D2IRD_DUCB)
 				# proTaskThroughput[sk][systemTime] = totalTask / (numberOfTaskMEC + numberOfTaskD2D1 + numberOfTaskD2D2)
 				# DTSTaskThroughput[sk][systemTime] = totalTaskDTS / (numberOfTaskMEC + numberOfTaskD2D1_gauss + numberOfTaskD2D2_gauss)
 				# UCBTaskThroughput[sk][systemTime] = totalTaskUCB / (numberOfTaskMEC + numberOfTaskD2D1_DUCB + numberOfTaskD2D2_DUCB)
-				print(proTaskThroughput)
-				print(numberOfTaskMEC)
-				print(numberOfTaskD2D1)
-				print(numberOfTaskD2D2)
-				print(numberOfTaskD2D1_gauss)
-				print(numberOfTaskD2D2_gauss)
-				print(numberOfTaskD2D1_DUCB)
-				print(numberOfTaskD2D2_DUCB)
-				print(DTSTaskThroughput)
-				print(UCBTaskThroughput)
+
 
 
 
 				systemTime += 1
+				if systemTime == totalRound:
+					if temp_SNRPro == 0:
+						proOut2[sk] = 0.8
+					else:
+						proOut2[sk] = 1 - np.exp(-6 / temp_SNRPro)
+					if temp_SNRDTS == 0:
+						DTSOut2[sk] = 0.8
+					else:
+						DTSOut2[sk] = 1 - np.exp(-6 / temp_SNRDTS)
+					if temp_SNRUCB == 0:
+						UCBOut2[sk] = 0.8
+					else:
+						UCBOut2[sk] = 1 - np.exp(-6 / temp_SNRUCB)
 
-				if systemTime == totalRound and self.NumberOfIoT == 100:
+					print('아아ㅜㅅ')
+					print(len(proOut[sk]),proOut[sk])
+					print(len(DTSOut[sk]), DTSOut[sk])
+					print(len(UCBOut[sk]), UCBOut[sk])
+					for i in range(totalRound - 1,-1,-1):
+						if UCBOut[sk][i] >= 1 or UCBOut[sk][i] == 0:
+							UCBOut[sk].pop(i)
+						if DTSOut[sk][i] >= 1 or DTSOut[sk][i] == 0:
+							DTSOut[sk].pop(i)
+						if proOut[sk][i] >= 1 or proOut[sk][i] == 0:
+							proOut[sk].pop(i)
+
+					print('pro',len(proOut[sk]))
+					print('dts',len(DTSOut[sk]))
+					print('ucb',len(UCBOut[sk]))
+					print(np.mean(proOut[sk]))
+					print(np.mean(DTSOut[sk]))
+					print(np.mean(UCBOut[sk]))
+					print(temp_numberOfPro)
+					print(temp_numberOfDTS)
+					print(temp_numberOfUCB)
+
+				if systemTime == totalRound and self.NumberOfIoT == NumberOfIoT[4]:
 					temp_D2D1_FAIL = [x for x in temp_D2D1Offloading if x not in completeTaskD2DIRD]
 					temp_D2D2_FAIL = [x for x in temp_D2D2Offloading if x not in completeTaskD2D2IRD]
 					temp_D2D1_FAIL_gauss = [x for x in temp_D2D1Offloading_gauss if x not in completeTaskD2DIRD_gauss]
@@ -1171,27 +1247,20 @@ class SimulationEXE():
 					numberOffailureTask_gauss += temp_fail_gauss
 					numberOffailureTask_DUCB += temp_fail_DUCB
 					sub = numberTasksCanceledAndConcludedMEC + numberTasksCanceledAndConcludedD2D1 + numberTasksCanceledAndConcludedD2D2
-					print('gmdkr',sub)
-					print(numberOffailureTask,temp_D2D2_FAIL,temp_D2D1_FAIL,temp_MEC_FAIL)
+
 					numberOfTotalTask = numberOfTaskMEC + numberOfTaskD2D1 + numberOfTaskD2D2
 					numberOfTotalTask_gauss = numberOfTaskMEC + numberOfTaskD2D1_gauss + numberOfTaskD2D2_gauss
 					numberOfTotalTask_DUCB = numberOfTaskMEC + numberOfTaskD2D1_DUCB + numberOfTaskD2D2_DUCB
-					print(numberOfTotalTask,numberOfTotalTask_gauss,numberOfTotalTask_DUCB)
+
 					taskFailureProb = numberOffailureTask / numberOfTotalTask
 					taskFailureProb_gauss = numberOffailureTask_gauss / numberOfTotalTask_gauss
 					taskFailureProb_DUCB = numberOffailureTask_DUCB / numberOfTotalTask_DUCB
 					#taskFailureProb_gauss = numberOffailureTask_gauss / numberOfTotalTask_gauss
-					print(taskFailureProb,taskFailureProb_gauss,taskFailureProb_DUCB)
-					print('===========regret=============')
-					print(regretSumOfPDTS)
-					print(regretSumOfGauss)
-					print('=============D2D2 regret')
-					print(regretSumOfPDTS_D2D2)
-					print(regretSumOfGauss_D2D2)
 
 
-					self.regretGraphGeneration(regretSumOfPDTS, regretSumOfPDTS_D2D2, regretSumOfGauss,
-										  regretSumOfGauss_D2D2, regretSumOfDUCB,regretSumOfDUCB_D2D2,totalRound)
+
+					# self.regretGraphGeneration(regretSumOfPDTS, regretSumOfPDTS_D2D2, regretSumOfGauss,
+					# 					  regretSumOfGauss_D2D2, regretSumOfDUCB,regretSumOfDUCB_D2D2,totalRound)
 					tempUtility_D2D1 = np.zeros(totalRound)
 					tempUtility_D2D2 = np.zeros(totalRound)
 					tempUtility_D2D1_DTS = utilityOfIRD_D2D1_gauss + utilityOfISD_D2D1_gauss + utilityOfIBD_D2D1_gauss
@@ -1215,35 +1284,72 @@ class SimulationEXE():
 					# self.utilityGraphGeneration(utilityOfIBD_D2D1, utilityOfIBD_D2D2, tempUtility_D2D1_DTS,
 					# 							tempUtility_D2D2_DTS, utilityOfIBD_D2D1_DUCB, utilityOfIBD_D2D2_DUCB,
 					# 							totalRound,3)
-					self.throughputGraph(totalRound,proTaskThroughput,DTSTaskThroughput,UCBTaskThroughput,0)
-					self.throughputGraph(totalRound, proTaskThroughput2, DTSTaskThroughput2, UCBTaskThroughput2,1)
-					self.throughputGraph(totalRound, proTaskThroughput, DTSTaskThroughput, UCBTaskThroughput, 2)
-					#self.outageProb(totalRound,proOut,DTSOut,UCBOut,0)
+					#self.throughputGraph(totalRound,proTaskThroughput,DTSTaskThroughput,UCBTaskThroughput,0)
+					#self.throughputGraph(totalRound, proTaskThroughput2, DTSTaskThroughput2, UCBTaskThroughput2,1)
+					#self.throughputGraph(totalRound, proTaskThroughput, DTSTaskThroughput, UCBTaskThroughput, 2)
+					self.outageProb(totalRound,proOut,DTSOut,UCBOut,0)
+					#self.outageProb2(totalRound, proOut2, DTSOut2, UCBOut2, 1)
 					#self.outageProb(totalRound,proFair,DTSFair,UCBFair,1)
-					print(tempUtility_D2D1)
-					print(tempUtility_D2D2)
-					print(tempUtility_D2D1_UCB)
-					print(tempUtility_D2D2_UCB)
+
 					#self.utilityGraphGeneration(utilityOfIBD_D2D1, utilityOfIBD_D2D2, utilityOfIBD_D2D1_gauss, utilityOfIBD_D2D2_gauss, utilityOfIBD_D2D1_DUCB,utilityOfIBD_D2D2_DUCB,totalRound)
 					# self.utilityGraphGeneration(utilityOfIRD_D2D1, utilityOfIRD_D2D2, utilityOfIBD_D2D1_gauss,
 					# 							utilityOfIRD_D2D2_gauss,utilityOfIRD_D2D1_DUCB,utilityOfIRD_D2D2_DUCB, totalRound)
 					# self.utilityGraphGeneration(utilityOfISD_D2D1, utilityOfISD_D2D2, utilityOfISD_D2D1_gauss,
 					# 							utilityOfISD_D2D2_gauss, utilityOfISD_D2D1_DUCB,utilityOfISD_D2D2_DUCB,totalRound)
 
-	def outageProb(self,totalRound,proOut,DTSOut,UCBOut,type):
+	def outageProb2(self, totalRound, proOut, DTSOut, UCBOut, type):
 
+		proOut = [0] + proOut
+		DTSOut = [0] + DTSOut
+		UCBOut = [0] + UCBOut
+		tmp1 = [0] + proOut
+		tmp2 = [0] + DTSOut
+		tmp3 = [0] + UCBOut
+		print(proOut)
+		print(DTSOut)
+		print(UCBOut)
 		plt.grid(visible=True, axis='x')
-		plt.plot(range(totalRound), proOut, marker='d', markevery=999)
-		plt.plot(range(totalRound), DTSOut, marker='s', markevery=999)
-		plt.plot(range(totalRound), UCBOut, marker='^', markevery=999)
+		plt.plot([0, 20, 40, 60, 80, 100], proOut, marker='d')
+		plt.plot([0, 20, 40, 60, 80, 100], DTSOut, marker='s')
+		plt.plot([0, 20, 40, 60, 80, 100], UCBOut, marker='^')
+		plt.xticks([0, 20, 40, 60, 80, 100])
 		plt.legend(['Proposed', 'EXE_DTS', 'PhtBandit'])
-		plt.title('Outage Probability')
-		plt.xlabel('Iteration t')
+		# plt.title('Outage Probability')
+		plt.xlabel('Number Of Devices')
 		plt.ylabel('실패율')
 		if type == 0:
 			plt.savefig('outage.png')
 		else:
-			plt.savefig('fairness.png')
+			plt.savefig('outage2.png')
+		plt.show()
+
+	def outageProb(self,totalRound,proOut,DTSOut,UCBOut,type):
+		tmp1 = [np.mean(proOut[0]), np.mean(proOut[1]), np.mean(proOut[2]),
+				np.mean(proOut[3]), np.mean(proOut[4])]
+		tmp2 = [np.mean(DTSOut[0]), np.mean(DTSOut[1]), np.mean(DTSOut[2]),
+				np.mean(DTSOut[3]), np.mean(DTSOut[4])]
+		tmp3 = [np.mean(UCBOut[0]), np.mean(UCBOut[1]), np.mean(UCBOut[2]),
+				np.mean(UCBOut[3]), np.mean(UCBOut[4])]
+
+		tmp1 = [0] + tmp1
+		tmp2 = [0] + tmp2
+		tmp3 = [0] + tmp3
+		print(tmp1)
+		print(tmp2)
+		print(tmp3)
+		plt.grid(visible=True, axis='x')
+		plt.plot([0, 20, 40, 60, 80, 100], tmp1, marker='d')
+		plt.plot([0, 20, 40, 60, 80, 100], tmp2, marker='s')
+		plt.plot([0, 20, 40, 60, 80, 100], tmp3, marker='^')
+		plt.xticks([0, 20, 40, 60, 80, 100])
+		plt.legend(['Proposed', 'EXE_DTS', 'PhtBandit'])
+		# plt.title('Outage Probability')
+		plt.xlabel('Number Of Devices')
+		plt.ylabel('실패율')
+		if type == 0:
+			plt.savefig('outage.png')
+		else:
+			plt.savefig('outage2.png')
 		plt.show()
 
 	def throughputGraph(self,totalRound,proTaskThroughput,DTSTaskThroughput,UCBTaskThroughput,type):
@@ -1255,9 +1361,6 @@ class SimulationEXE():
 		tmp3 = [np.mean(UCBTaskThroughput[0]), np.mean(UCBTaskThroughput[1]), np.mean(UCBTaskThroughput[2]),
 				np.mean(UCBTaskThroughput[3]), np.mean(UCBTaskThroughput[4])]
 
-		print(tmp1)
-		print(tmp2)
-		print(tmp3)
 
 		if type == 2:
 			pigname = 'abvc.png'
@@ -1269,8 +1372,7 @@ class SimulationEXE():
 			tmp1 = [tmp[i] for i in range(5)]
 			tmp2 = [tmp[i] for i in range(5, 10)]
 			tmp3 = [tmp[i] for i in range(10, 15)]
-			print(tmp1,tmp3)
-			print(tmp2)
+
 		else:
 
 			if type == 1:
@@ -1409,8 +1511,7 @@ class SimulationEXE():
 				completeTaskD2DIRD.append(i)
 				numberOffailureTask += 1
 				#print(i)
-			else:
-				print('이게맞나', i)
+
 		return numberOffailureTask,numberTasksCanceledAndConcludedD2D,completeTaskD2DIRD,completeTaskD2DISD,temp_D2D1Offloading,temp_IRD,temp_ISD
 
 	def matchingIRDISD(self,win_IRD,sorting_opt_ISD,task,IIoT):
@@ -1421,9 +1522,7 @@ class SimulationEXE():
 					sortingWinIRD[key] = {'dataSize': task.getEntryDataSize()[key],
 										  'computationWorkload': task.getCompLoad()[key],
 										  'deadlineLatency': task.getDeadline()[key]}
-					print("sdfasdfasdf", task.getEntryDataSize()[key])
-					print(task.getCompLoad()[key])
-					print(sortingWinIRD[key]['dataSize'], sortingWinIRD[key]['computationWorkload'])
+
 					sortingWinIRD[key] = {
 						'order': sortingWinIRD[key]['dataSize'] * sortingWinIRD[key]['computationWorkload']}
 			# continue
@@ -1456,17 +1555,14 @@ class SimulationEXE():
 			if j < num:
 				temp = ask - value['ask']
 				ISD += temp
-				print('ask_isd',key,ask,value['ask'],ISD)
 			j += 1
 		j = 0
 		for key, value in list(IRD_actualBid.items()):
 			if j < num:
 				temp = value['bid'] - bid
 				IRD += temp
-				print('bid_ird',key,value['bid'],bid,IRD)
 			j += 1
 		IBD = num * (bid - ask)
-		print(num,IBD,bid-ask)
 		# if IRD != 0 and num != 0:
 		# 	IRD = IRD / num
 		# if ISD != 0 and num != 0:
@@ -1486,25 +1582,70 @@ class SimulationEXE():
 
 
 	def MABanswer(self,win_ISD,com,preReward,selectCount,systemTime):
-		if systemTime < 3000:
-			sigma = 5.0
+
+		if self.NumberOfIoT >= 20 and self.NumberOfIoT <= 40:
+
+			sigma1 = 0.05
+			sigma2 = 0.05
+			power = 0.2
 		# elif systemTime >= 1500 and systemTime < 3000:
 		# 	sigma = 1.0
 		# elif systemTime >= 3000 and systemTime < 4000:
 		# 	sigma = 0.2
-		else:
-			sigma = 0.05
+		elif self.NumberOfIoT >= 60:
+			sigma1 = 0.1
+			sigma2 = 0.1
+			power = 0.15
+		elif self.NumberOfIoT == 100:
+			sigma1 = 0.5
+			sigma2 = 0.5
+			power = 0.1
 		# if len(win_ISD) == 0:
 		# 	print("no winner")
 		# else:
-		power = 0.2
+		#power = 0.2
 		ISD_BW = 5
 		SNR = dict()
 		DR = dict()
 		energy = np.zeros(len(win_ISD))
+		temp = int(len(win_ISD) * 1.5)
+		# sigma1 = 0.05
+		# sigma2 = 0.05
+		# power = 0.2
+
 		#signal = nr.normal(0, 1, len(win_ISD))
-		channelGain = nr.normal(0, sigma, len(win_ISD))
-		noise = nr.normal(0,sigma,len(win_ISD))
+		# if self.NumberOfIoT == 20:
+		# 	temp = int(len(win_ISD)*1.5)
+		# 	sigma1 = 0.05
+		# 	sigma2 = 0.05
+		# 	power = 0.2
+		# elif self.NumberOfIoT == 40:
+		# 	temp = int(len(win_ISD) * 1.4)
+		# 	sigma1 = 0.025
+		# 	sigma2 = 0.025
+		# 	power = 0.2
+		# elif self.NumberOfIoT == 60:
+		# 	temp = int(len(win_ISD) * 1.3)
+		# 	sigma1 = 0.025
+		# 	sigma2 = 0.025
+		# 	power = 0.2
+		# elif self.NumberOfIoT == 80:
+		# 	temp = int(len(win_ISD) * 1.2)
+		# 	sigma1 = 0.02
+		# 	sigma2 = 0.02
+		# 	power = 0.1
+		# elif self.NumberOfIoT == 100:
+		# 	temp = int(len(win_ISD) * 1.1)
+		# 	sigma1 = 0.02
+		# 	sigma2 = 0.02
+		# 	power = 0.1
+		channelGain1 = nr.normal(0, sigma2, temp)
+		noise1 = nr.normal(0,sigma1,temp)
+
+		a = [random.randint(0,temp-1) for i in range(len(win_ISD))]
+
+		channelGain = [channelGain1[a[i]] for i in range(len(win_ISD))]
+		noise = [noise1[a[i]] for i in range(len(win_ISD))]
 		#noise = self.awgn(signal)
 		temp_importance = []
 			# for index, (key, value) in enumerate(win_ISD.items()):
@@ -1540,9 +1681,7 @@ class SimulationEXE():
 
 		tempReward = copy.deepcopy(preReward)
 		for index in win_ISD:
-			print('리워드',index)
-			print(preReward)
-			print(tempReward)
+
 			selectCount[index] += 1
 
 			if com[index] == 0:
@@ -1554,9 +1693,7 @@ class SimulationEXE():
 			else:
 				reward = 0.5 * ((1 / DR[index]) + (1 / com[index])) + 0.5 * energy[j]
 				if selectCount[index] != 0:
-					print('으라야',preReward[index])
-					print(selectCount[index])
-					print(reward)
+
 					reward = ((preReward[index] * (selectCount[index] - 1)) + reward) / selectCount[index]
 					#reward = 1 / (1 + math.exp(-reward))
 				preReward[index] = reward
@@ -1584,28 +1721,27 @@ class SimulationEXE():
 
 			maxArm_value = maxArm[1]['importance']
 
-			print('먐', maxArm_value)
+
 			extract_maxArm = max(extract_prob.values())
 
 
-			print(extract_maxArm)
+
 			regretSum = abs(maxArm_value - extract_maxArm)
-			print('regret',regretSum)
+
 		else:
-			print(win_ISD)
-			print(extract_prob)
+
 			maxArm = min(win_ISD.items(), key=lambda x: x[1]['importance'])
 
 			maxArm_value = maxArm[1]['importance']
-			print(maxArm_value)
+
 			maxArm_value = 1 / (1 + math.exp(-maxArm_value))
-			print('먐2', maxArm_value)
+
 			extract_maxArm = min(extract_prob.values())
-			print(extract_maxArm)
+
 			extract_maxArm = 1 / (1 + math.exp(-extract_maxArm))
-			print(extract_maxArm)
+
 			regretSum = abs(maxArm_value - extract_maxArm)
-			print('regret2', regretSum)
+
 		return regretSum
 
 	# Addictive White Gaussian Noise function

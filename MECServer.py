@@ -94,7 +94,7 @@ class MECServer():
                     #self.statusCPUs.append(self.Cpu_occupied)
                     self.statusCPUs[i] = self.Cpu_occupied
                     return True
-        print(self.MECID,"all occupied")
+
         return False
 
     def freeCPU(self):
@@ -103,5 +103,5 @@ class MECServer():
                 self.statusCPUs.pop(i)
                 self.statusCPUs.append(self.CPU_FREE)
                 return True
-        print(self.MECID,"All cpu already free")
+
         return False
