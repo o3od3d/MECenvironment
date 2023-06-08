@@ -51,7 +51,7 @@
 <div align="center">
   
 ### Throughput
-
+___
 
 ![image](https://github.com/o3od3d/MECenvironment/assets/44185083/578586a5-5226-4c5a-af4a-537987d370b0)
 
