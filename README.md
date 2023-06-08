@@ -55,20 +55,30 @@
 
 ![image](https://github.com/o3od3d/MECenvironment/assets/44185083/578586a5-5226-4c5a-af4a-537987d370b0)
 
+  
+  
+  
 ### Communication failure
 
 
 ![image](https://github.com/o3od3d/MECenvironment/assets/44185083/0f597863-093e-4d3e-aad1-f8964dcfa6a9)
 
+  
+  
+  
 ### Regret
 
 
 ![image](https://github.com/o3od3d/MECenvironment/assets/44185083/894214ed-85e4-46af-9dcf-c68ce938e297)
 
+  
+  
+  
 ### Utility
 
   
-![image](https://github.com/o3od3d/MECenvironment/assets/44185083/7f63ce92-580a-437f-9f13-afb1542c117a)
+![image](https://github.com/o3od3d/MECenvironment/assets/44185083/0a87b062-aaff-4897-8e57-3f08e878db50)
+
 
 
 
