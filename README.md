@@ -46,19 +46,15 @@
 </br>
 
 ### Throughput
-</br>
 ![image](https://github.com/o3od3d/MECenvironment/assets/44185083/578586a5-5226-4c5a-af4a-537987d370b0)
 
 ### Communication failure
-</br>
 ![image](https://github.com/o3od3d/MECenvironment/assets/44185083/0f597863-093e-4d3e-aad1-f8964dcfa6a9)
 
 ### Regret
-</br>
 ![image](https://github.com/o3od3d/MECenvironment/assets/44185083/894214ed-85e4-46af-9dcf-c68ce938e297)
 
 ### Utility
-</br>
 ![image](https://github.com/o3od3d/MECenvironment/assets/44185083/83c8cd97-636a-4aca-888f-c3be3e37ffae)
 
 
