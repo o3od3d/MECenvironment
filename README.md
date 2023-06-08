@@ -44,11 +44,11 @@
   - 제안할 기법과 비교할 기존의 Multi-Armed Bandit의 Discounted UCB(Upper Confidence Bound) 코드이다.
 </br>
 </br>
-<div align="center">
+
   
 ## SIMULATION RESULT
 
-
+<div align="center">
 ### Throughput
 
 
@@ -67,7 +67,8 @@
 ### Utility
 
 
-![image](https://github.com/o3od3d/MECenvironment/assets/44185083/83c8cd97-636a-4aca-888f-c3be3e37ffae)
+![image](https://github.com/o3od3d/MECenvironment/assets/44185083/0ed62fb6-844b-4da2-ac80-69ee41da43e6)
+
 
 </div>
 
