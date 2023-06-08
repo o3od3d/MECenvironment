@@ -49,6 +49,7 @@
 ## SIMULATION RESULT
 
 <div align="center">
+  
 ### Throughput
 
 
@@ -66,8 +67,9 @@
 
 ### Utility
 
+  
+![image](https://github.com/o3od3d/MECenvironment/assets/44185083/7f63ce92-580a-437f-9f13-afb1542c117a)
 
-![image](https://github.com/o3od3d/MECenvironment/assets/44185083/0ed62fb6-844b-4da2-ac80-69ee41da43e6)
 
 
 </div>
