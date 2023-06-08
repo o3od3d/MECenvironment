@@ -5,7 +5,7 @@
 
 
 ## FILE DESCRIPTION
-___
+
 simulation_exe.py 을 통해 시뮬레이션을 실행할 수 있으며, 실행 결과는 제안한 기법과 비교 기법의 Throuput, communication failure, regret, utility 그래프가 도출된다. 이 파일에서 생성할 기기 수와 총 라운드 횟수를 설정할 수 있다.
 IIoTdevice.py MEC 커버리지 내에 생성되는 IIoT 기기들을 생성하는 코드로 이 코드에서 각 IIoT 기기의 위치별로 상세하게 D2D task offloading을 위한 클러스터링 작업이 수행된다.
 MECServer.py MEC 서버도 task를 처리하기 때문에 이 코드를 통해 MEC 서버가 태스크를 처리하게 된다.
@@ -17,12 +17,10 @@ existing_DTS.py 제안한 기법과 비교할 기존의 Multi-Armed Bandit의 Di
 discountedUCB.py 제안할 기법과 비교할 기존의 Multi-Armed Bandit의 Discounted UCB(Upper Confidence Bound) 코드이다.
 
 ## simulation result
-___
 
 
 
 ## papers
-___
 
 
 > **reference : https://github.com/jlggross/MEC-simulator
